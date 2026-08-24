@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>주식 노가다 타이쿤</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Stock Price Graph -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Tone.js for Sound Effects & Synthesizer BGM -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap');
@@ -23,7 +27,7 @@
             transition: background 1s ease-in-out;
         }
 
-        /* Dynamic Background Themes based on Rank */
+        /* Dynamic Rank Background Themes */
         body.theme-0 { background: linear-gradient(to bottom, #d6d3d1, #a8a29e); }
         body.theme-1 { background: linear-gradient(to bottom, #fcd34d, #b45309); }
         body.theme-2 { background: linear-gradient(to bottom, #e2e8f0, #64748b); }
@@ -52,24 +56,11 @@
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 9999px; }
-
-        @keyframes shine {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-        .text-shine {
-            background: linear-gradient(to right, #6ee7b7 20%, #ffffff 40%, #ffffff 60%, #6ee7b7 80%);
-            background-size: 200% auto;
-            color: #000;
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shine 3s linear infinite;
-        }
     </style>
 </head>
 <body class="flex flex-col h-screen max-w-md mx-auto shadow-2xl relative overflow-hidden select-none theme-0" id="appBody">
 
+    <!-- Header Section -->
     <header class="bg-blue-900/90 text-white p-3.5 shadow-lg z-20 flex-shrink-0 relative backdrop-blur-md border-b border-blue-800">
         <div class="flex justify-between items-center mb-1.5">
             <h1 class="text-lg font-black tracking-tight flex items-center space-x-1.5">
@@ -90,15 +81,19 @@
                 </button>
             </div>
         </div>
+
         <div class="grid grid-cols-2 gap-2 text-sm bg-blue-950/60 p-2.5 rounded-2xl border border-blue-700/50 backdrop-blur-sm">
             <div>
                 <p class="text-blue-300 text-[10px] font-bold uppercase tracking-wider">보유 현금</p>
                 <p id="cashDisplay" class="font-black text-base sm:text-lg text-white">₩0</p>
             </div>
             <div>
-                <div class="flex justify-between items-center">
-                    <p class="text-blue-300 text-[10px] font-bold uppercase tracking-wider">총 자산</p>
-                    <span id="totalProfitRateDisplay" class="text-[10px] font-bold text-gray-400">주식수익률 0.0%</span>
+                <div class="flex justify-between items-start">
+                    <p class="text-blue-300 text-[10px] font-bold uppercase tracking-wider">총 자산 (순자산)</p>
+                    <div class="text-right flex flex-col items-end">
+                        <span id="totalProfitRateDisplay" class="text-[10px] font-bold text-gray-400">주식수익률 0.0%</span>
+                        <span id="totalProfitAmountDisplay" class="text-[9px] font-medium text-gray-500">₩0</span>
+                    </div>
                 </div>
                 <p id="totalAssetDisplay" class="font-black text-base sm:text-lg text-yellow-300">₩0</p>
             </div>
@@ -110,12 +105,14 @@
             <span id="karmaDisplay" class="text-xs font-black text-white">0 개</span>
         </div>
 
+        <!-- News Ticker Banner -->
         <div class="mt-2 bg-blue-950/90 rounded-xl px-2.5 py-1 flex items-center space-x-2 border border-blue-800 text-xs overflow-hidden">
             <span id="newsTagBadge" class="bg-gray-600 text-white font-black px-1.5 py-0.5 rounded text-[10px] flex-shrink-0">알림</span>
             <p id="newsTicker" class="text-gray-200 font-medium truncate text-[11px]">증시 거래가 시작되었습니다.</p>
         </div>
     </header>
 
+    <!-- Main Views Container -->
     <main class="flex-1 relative overflow-hidden bg-white/90 backdrop-blur-md flex flex-col rounded-t-3xl -mt-4 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.1)]">
         
         <!-- Tab 1: Work (Clicker) -->
@@ -253,63 +250,158 @@
             <div id="flexList" class="space-y-3 pb-6 px-1"></div>
         </div>
 
-        <!-- Tab 5: Rebirth (Prestige) -->
+        <!-- Tab 5: Bank Loan (대출) -->
+        <div id="tab-loan" class="w-full h-full hidden flex-col p-4 overflow-y-auto space-y-3">
+            <div class="px-1 flex-shrink-0">
+                <h2 class="text-xl font-black text-gray-800">개미 대출 은행</h2>
+                <p class="text-xs text-gray-500 mt-0.5">급전이 필요할 때 대출을 이용하세요. (10초마다 이자 발생)</p>
+            </div>
+
+            <!-- Current Loan Summary Card -->
+            <div class="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-2xl p-4 text-white shadow-md border border-indigo-700 space-y-3 flex-shrink-0">
+                <div class="flex justify-between items-center border-b border-indigo-800 pb-2">
+                    <span class="text-xs font-bold text-indigo-300">내 현재 대출 원금</span>
+                    <span id="loanBorrowedDisplay" class="text-lg font-black text-red-400">₩0</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <span class="text-gray-400 block text-[10px]">내 칭호 대출 한도</span>
+                        <span id="loanLimitDisplay" class="font-black text-emerald-400">₩1,000,000</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 block text-[10px]">10초당 이자율 (틱당)</span>
+                        <span id="loanInterestDisplay" class="font-black text-amber-400">20.0%</span>
+                    </div>
+                </div>
+                <div class="bg-indigo-950/80 rounded-xl p-2 text-[10px] text-indigo-200 border border-indigo-800/80 flex justify-between items-center">
+                    <span>추가 대출 가능 한도:</span>
+                    <span id="loanRemainLimitDisplay" class="font-black text-white">₩1,000,000</span>
+                </div>
+            </div>
+
+            <!-- Percentage Loan Action Buttons -->
+            <div class="grid grid-cols-2 gap-3 flex-shrink-0">
+                <!-- Borrow Box -->
+                <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-xs flex items-center"><i class="fas fa-hand-holding-dollar text-indigo-500 mr-1"></i>대출 받기</h3>
+                        <p class="text-[9px] text-gray-400 mt-0.5">남은 한도 기준 대출 실행</p>
+                    </div>
+                    <div class="space-y-1.5 mt-2">
+                        <button id="btnBorrow10Pct" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[11px] py-1.5 rounded-lg border border-indigo-200 active:scale-95 transition-all text-left px-2 truncate">10% 대출 (+₩0)</button>
+                        <button id="btnBorrow50Pct" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[11px] py-1.5 rounded-lg border border-indigo-200 active:scale-95 transition-all text-left px-2 truncate">50% 대출 (+₩0)</button>
+                        <button id="btnBorrowMax" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs py-2 rounded-xl active:scale-95 transition-all shadow-sm truncate">한도 채워서 대출 (100%)</button>
+                    </div>
+                </div>
+
+                <!-- Repay Box -->
+                <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-xs flex items-center"><i class="fas fa-piggy-bank text-emerald-500 mr-1"></i>대출 상환하기</h3>
+                        <p class="text-[9px] text-gray-400 mt-0.5">원금 상환 (부족 시 현금 마이너스)</p>
+                    </div>
+                    <div class="space-y-1.5 mt-2">
+                        <button id="btnRepay10Pct" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] py-1.5 rounded-lg border border-emerald-200 active:scale-95 transition-all text-left px-2 truncate">10% 상환 (-₩0)</button>
+                        <button id="btnRepay50Pct" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] py-1.5 rounded-lg border border-emerald-200 active:scale-95 transition-all text-left px-2 truncate">50% 상환 (-₩0)</button>
+                        <button id="btnRepayMax" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-2 rounded-xl active:scale-95 transition-all shadow-sm truncate">전액 상환 (100%)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rank Loan Benefits Guide List -->
+            <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-200 flex-1 overflow-y-auto">
+                <h3 class="font-bold text-gray-800 text-xs mb-2 flex items-center"><i class="fas fa-list-check text-indigo-500 mr-1"></i>칭호별 대출 우대 가이드</h3>
+                <div id="loanRankListContainer" class="space-y-1.5">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 6: Rebirth (Prestige) -->
         <div id="tab-rebirth" class="w-full h-full hidden flex-col p-4 overflow-y-auto space-y-4">
             <div class="px-1 flex-shrink-0">
                 <h2 class="text-xl font-black text-gray-800">금수저 환생</h2>
                 <p class="text-xs text-gray-500 mt-0.5">모든 것을 초기화하고 <span class="text-emerald-600 font-bold">영구적인 힘</span>을 얻습니다.</p>
             </div>
             
-            <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-4 shadow-lg border border-gray-700 relative overflow-hidden">
+            <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-4 shadow-lg border border-gray-700 relative overflow-hidden flex-shrink-0">
                 <div class="absolute -right-4 -top-4 text-emerald-500/20 text-6xl"><i class="fas fa-infinity"></i></div>
                 <div class="relative z-10 text-center">
-                    <p class="text-[11px] text-gray-400 font-medium mb-2">현재 총 자산 기준 획득 가능한 재화</p>
+                    <p class="text-[11px] text-gray-400 font-medium mb-1">현재 총 자산 기준 획득 가능한 재화</p>
                     <div class="font-black text-3xl text-emerald-400 mb-1">
                         <i class="fas fa-gem text-xl mr-1"></i><span id="prestigeGainEstimate">0</span>
                     </div>
-                    <p class="text-[9px] text-gray-500 mb-4">* 환생을 위해선 최소 ₩100,000,000의 총 자산이 필요합니다.</p>
-                    <button id="btnDoPrestige" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-3 rounded-xl transition-all active:scale-95 shadow-md">
+                    <p class="text-[9px] text-gray-400 mb-3">* 환생을 위해선 최소 ₩100,000,000의 총 자산이 필요합니다.</p>
+                    <button id="btnDoPrestige" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-2.5 rounded-xl transition-all active:scale-95 shadow-md">
                         환생 실행하기
                     </button>
                 </div>
             </div>
 
-            <div class="px-1 flex-shrink-0 mt-2 border-b border-gray-200 pb-2">
+            <div class="px-1 flex-shrink-0 border-b border-gray-200 pb-2">
                 <h3 class="text-base font-black text-gray-800 flex items-center"><i class="fas fa-sitemap text-emerald-500 mr-1.5"></i>영구 스킬 트리</h3>
                 <p class="text-[10px] text-gray-500 mt-0.5">카르마를 소비하여 환생해도 유지되는 패시브를 강화합니다.</p>
             </div>
             
-            <div id="skillListContainer" class="space-y-3 pb-6">
-                <!-- Injected via JS -->
-            </div>
+            <div id="skillListContainer" class="space-y-3 pb-6"></div>
         </div>
     </main>
 
-    <!-- Bottom Navigation Bar -->
+    <!-- Navigation Bar -->
     <nav class="flex-shrink-0 bg-white border-t border-gray-200 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] pb-safe relative">
         <div class="flex">
-            <button class="nav-btn flex-1 py-2.5 flex flex-col items-center justify-center transition-colors text-blue-600 font-bold bg-blue-50" data-target="tab-work">
-                <i class="fas fa-hand-pointer text-base mb-0.5"></i>
-                <span class="text-[10px]">돈 벌기</span>
+            <button class="nav-btn flex-1 py-2 flex flex-col items-center justify-center transition-colors text-blue-600 font-bold bg-blue-50" data-target="tab-work">
+                <i class="fas fa-hand-pointer text-sm mb-0.5"></i>
+                <span class="text-[9px]">돈 벌기</span>
             </button>
-            <button class="nav-btn flex-1 py-2.5 flex flex-col items-center justify-center transition-colors text-gray-400 font-medium hover:bg-gray-50" data-target="tab-upgrade">
-                <i class="fas fa-bolt text-base mb-0.5"></i>
-                <span class="text-[10px]">강화</span>
+            <button class="nav-btn flex-1 py-2 flex flex-col items-center justify-center transition-colors text-gray-400 font-medium hover:bg-gray-50" data-target="tab-upgrade">
+                <i class="fas fa-bolt text-sm mb-0.5"></i>
+                <span class="text-[9px]">강화</span>
             </button>
-            <button class="nav-btn flex-1 py-2.5 flex flex-col items-center justify-center transition-colors text-gray-400 font-medium hover:bg-gray-50" data-target="tab-stock">
-                <i class="fas fa-chart-line text-base mb-0.5"></i>
-                <span class="text-[10px]">주식거래</span>
+            <button class="nav-btn flex-1 py-2 flex flex-col items-center justify-center transition-colors text-gray-400 font-medium hover:bg-gray-50" data-target="tab-stock">
+                <i class="fas fa-chart-line text-sm mb-0.5"></i>
+                <span class="text-[9px]">주식거래</span>
             </button>
-            <button class="nav-btn flex-1 py-2.5 flex flex-col items-center justify-center transition-colors text-gray-400 font-medium hover:bg-gray-50" data-target="tab-flex">
-                <i class="fas fa-building text-base mb-0.5"></i>
-                <span class="text-[10px]">부동산</span>
+            <button class="nav-btn flex-1 py-2 flex flex-col items-center justify-center transition-colors text-gray-400 font-medium hover:bg-gray-50" data-target="tab-flex">
+                <i class="fas fa-building text-sm mb-0.5"></i>
+                <span class="text-[9px]">부동산</span>
             </button>
-            <button class="nav-btn flex-1 py-2.5 flex flex-col items-center justify-center transition-colors text-emerald-500 font-medium hover:bg-emerald-50" data-target="tab-rebirth">
-                <i class="fas fa-gem text-base mb-0.5"></i>
-                <span class="text-[10px]">환생</span>
+            <button class="nav-btn flex-1 py-2 flex flex-col items-center justify-center transition-colors text-gray-400 font-medium hover:bg-gray-50" data-target="tab-loan">
+                <i class="fas fa-piggy-bank text-sm mb-0.5"></i>
+                <span class="text-[9px]">대출</span>
+            </button>
+            <button class="nav-btn flex-1 py-2 flex flex-col items-center justify-center transition-colors text-emerald-500 font-medium hover:bg-emerald-50" data-target="tab-rebirth">
+                <i class="fas fa-gem text-sm mb-0.5"></i>
+                <span class="text-[9px]">환생</span>
             </button>
         </div>
     </nav>
+
+    <!-- Modals -->
+    <!-- Borrow Confirmation Modal -->
+    <div id="borrowConfirmModal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-xs rounded-3xl p-5 text-center space-y-4 shadow-2xl">
+            <div class="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl mx-auto"><i class="fas fa-hand-holding-dollar"></i></div>
+            <div>
+                <h3 class="font-black text-lg text-gray-800">대출 실행 확인</h3>
+                <p class="text-xs text-gray-500 mt-1">선택하신 대출을 정말로 받으시겠습니까?</p>
+            </div>
+            <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100 text-xs text-left space-y-1">
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-bold">대출 실행 금액:</span>
+                    <span id="borrowModalAmount" class="font-black text-indigo-700">₩0</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500 font-bold">10초당 예상 이율:</span>
+                    <span id="borrowModalInterest" class="font-black text-amber-600">20.0%</span>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="btnCancelBorrow" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs">취소</button>
+                <button id="btnConfirmBorrow" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs shadow-md">대출 실행</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Settings Modal -->
     <div id="settingsModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -438,6 +530,22 @@
         </div>
     </div>
 
+    <!-- Data Reset Confirmation Modal -->
+    <div id="resetConfirmModal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-xs rounded-3xl p-5 text-center space-y-4 shadow-2xl">
+            <div class="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-2xl mx-auto"><i class="fas fa-triangle-exclamation"></i></div>
+            <div>
+                <h3 class="font-black text-lg text-gray-800">데이터 초기화</h3>
+                <p class="text-xs text-gray-500 mt-1">정말로 모든 게임 데이터를 삭제하고 초기화하시겠습니까? 이 작업은 복구할 수 없습니다.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="btnCancelReset" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs">취소</button>
+                <button id="btnConfirmReset" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs">모두 삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Core Module -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -534,6 +642,7 @@
         const getInitialGameState = () => ({
             cash: 0,
             initialCash: 0,
+            borrowedAmount: 0,
             clickPower: 10,
             autoPower: 0,
             realEstatePower: 0,
@@ -576,16 +685,17 @@
         });
 
         let gameState = getInitialGameState();
+        let pendingBorrowAmount = 0; // State variable for borrow confirmation
 
         const ranks = [
-            { min: 0, title: '🌱 흙수저', clickBuff: 0, reBuff: 0, themeIdx: 0 },
-            { min: 50000, title: '🥉 동수저', clickBuff: 0.1, reBuff: 0.05, themeIdx: 1 },
-            { min: 500000, title: '🥈 은수저', clickBuff: 0.25, reBuff: 0.1, themeIdx: 2 },
-            { min: 5000000, title: '🥇 금수저', clickBuff: 0.5, reBuff: 0.2, themeIdx: 3 },
-            { min: 100000000, title: '👑 개미왕', clickBuff: 1.0, reBuff: 0.35, themeIdx: 4 },
-            { min: 5000000000, title: '💎 여의도 큰손', clickBuff: 2.0, reBuff: 0.5, themeIdx: 5 },
-            { min: 200000000000, title: '🚀 월가의 전설', clickBuff: 4.0, reBuff: 1.0, themeIdx: 6 },
-            { min: 10000000000000, title: '🌌 지구 최고 재벌', clickBuff: 10.0, reBuff: 2.5, themeIdx: 7 }
+            { min: 0, title: '🌱 흙수저', clickBuff: 0, reBuff: 0, themeIdx: 0, loanLimit: 1000000, loanInterest: 0.20 },
+            { min: 50000, title: '🥉 동수저', clickBuff: 0.1, reBuff: 0.05, themeIdx: 1, loanLimit: 10000000, loanInterest: 0.15 },
+            { min: 500000, title: '🥈 은수저', clickBuff: 0.25, reBuff: 0.1, themeIdx: 2, loanLimit: 100000000, loanInterest: 0.12 },
+            { min: 5000000, title: '🥇 금수저', clickBuff: 0.5, reBuff: 0.2, themeIdx: 3, loanLimit: 1000000000, loanInterest: 0.10 },
+            { min: 100000000, title: '👑 개미왕', clickBuff: 1.0, reBuff: 0.35, themeIdx: 4, loanLimit: 20000000000, loanInterest: 0.08 },
+            { min: 5000000000, title: '💎 여의도 큰손', clickBuff: 2.0, reBuff: 0.5, themeIdx: 5, loanLimit: 500000000000, loanInterest: 0.05 },
+            { min: 200000000000, title: '🚀 월가의 전설', clickBuff: 4.0, reBuff: 1.0, themeIdx: 6, loanLimit: 10000000000000, loanInterest: 0.03 },
+            { min: 10000000000000, title: '🌌 지구 최고 재벌', clickBuff: 10.0, reBuff: 2.5, themeIdx: 7, loanLimit: 500000000000000, loanInterest: 0.01 }
         ];
 
         let els = {};
@@ -598,6 +708,7 @@
                 cash: document.getElementById('cashDisplay'),
                 asset: document.getElementById('totalAssetDisplay'),
                 profitRate: document.getElementById('totalProfitRateDisplay'),
+                profitAmount: document.getElementById('totalProfitAmountDisplay'),
                 clickPower: document.getElementById('clickPowerDisplay'),
                 autoPower: document.getElementById('autoPowerDisplay'),
                 realEstatePower: document.getElementById('realEstatePowerDisplay'),
@@ -650,12 +761,34 @@
                 settingNicknameInput: document.getElementById('settingNicknameInput'),
                 btnSaveNickname: document.getElementById('btnSaveNickname'),
                 btnResetGame: document.getElementById('btnResetGame'),
+                resetConfirmModal: document.getElementById('resetConfirmModal'),
+                btnCancelReset: document.getElementById('btnCancelReset'),
+                btnConfirmReset: document.getElementById('btnConfirmReset'),
 
                 prestigeCurrencyHeader: document.getElementById('prestigeCurrencyHeader'),
                 karmaDisplay: document.getElementById('karmaDisplay'),
                 prestigeGainEstimate: document.getElementById('prestigeGainEstimate'),
                 btnDoPrestige: document.getElementById('btnDoPrestige'),
                 skillListContainer: document.getElementById('skillListContainer'),
+
+                // Loan Elements
+                loanBorrowedDisplay: document.getElementById('loanBorrowedDisplay'),
+                loanInterestDisplay: document.getElementById('loanInterestDisplay'),
+                loanLimitDisplay: document.getElementById('loanLimitDisplay'),
+                loanRemainLimitDisplay: document.getElementById('loanRemainLimitDisplay'),
+                btnBorrow10Pct: document.getElementById('btnBorrow10Pct'),
+                btnBorrow50Pct: document.getElementById('btnBorrow50Pct'),
+                btnBorrowMax: document.getElementById('btnBorrowMax'),
+                btnRepay10Pct: document.getElementById('btnRepay10Pct'),
+                btnRepay50Pct: document.getElementById('btnRepay50Pct'),
+                btnRepayMax: document.getElementById('btnRepayMax'),
+                loanRankListContainer: document.getElementById('loanRankListContainer'),
+
+                borrowConfirmModal: document.getElementById('borrowConfirmModal'),
+                borrowModalAmount: document.getElementById('borrowModalAmount'),
+                borrowModalInterest: document.getElementById('borrowModalInterest'),
+                btnCancelBorrow: document.getElementById('btnCancelBorrow'),
+                btnConfirmBorrow: document.getElementById('btnConfirmBorrow'),
 
                 tradeModal: document.getElementById('tradeModal'),
                 tradeModalContent: document.getElementById('tradeModalContent'),
@@ -690,7 +823,10 @@
             };
         }
 
-        function formatCurrency(num) { return '₩' + Math.floor(num).toLocaleString('ko-KR'); }
+        function formatCurrency(num) { 
+            const absVal = Math.abs(Math.floor(num)).toLocaleString('ko-KR');
+            return num < 0 ? `-₩${absVal}` : `₩${absVal}`; 
+        }
 
         function getCurrentRankObj() {
             const total = getTotalAsset();
@@ -704,13 +840,13 @@
         function getTotalAsset() {
             const stockVal = gameState.stocks.reduce((acc, stock) => acc + (stock.price * stock.owned), 0);
             const realEstateVal = gameState.realEstate.reduce((acc, re) => acc + (re.cost * re.owned), 0);
-            return gameState.cash + stockVal + realEstateVal;
+            return gameState.cash + stockVal + realEstateVal - (gameState.borrowedAmount || 0);
         }
 
         function calculatePrestigeGain() {
             const total = getTotalAsset();
-            if (total < 100000000) return 0; // 1억 기준
-            return Math.floor(10 * Math.pow(total / 100000000, 0.5)); // 1억=10, 4억=20...
+            if (total < 100000000) return 0;
+            return Math.floor(10 * Math.pow(total / 100000000, 0.5));
         }
 
         function getSkillEffect(skillKey) {
@@ -753,7 +889,7 @@
         }
 
         function getDiscountedReCost(baseCost) {
-            const discount = Math.min(0.5, getSkillEffect('realEstateDiscount')); // Max 50%
+            const discount = Math.min(0.5, getSkillEffect('realEstateDiscount'));
             return Math.floor(baseCost * (1 - discount));
         }
 
@@ -810,9 +946,58 @@
             if (els.prestigeGainEstimate) els.prestigeGainEstimate.textContent = est.toLocaleString('ko-KR');
             toggleBtnState(els.btnDoPrestige, est > 0, "bg-emerald-600 hover:bg-emerald-500 text-white");
             
-            if (gameState.karma > 0) {
+            if (gameState.karma > 0 && els.prestigeCurrencyHeader) {
                 els.prestigeCurrencyHeader.classList.remove('hidden');
-                els.karmaDisplay.textContent = `${gameState.karma.toLocaleString('ko-KR')} 개`;
+                if (els.karmaDisplay) els.karmaDisplay.textContent = `${gameState.karma.toLocaleString('ko-KR')} 개`;
+            }
+        }
+
+        function updateLoanUI() {
+            const rank = getCurrentRankObj();
+            const borrowed = gameState.borrowedAmount || 0;
+            const limit = rank.loanLimit;
+            const interestPct = (rank.loanInterest * 100).toFixed(1);
+            const remain = Math.max(0, limit - borrowed);
+
+            if (els.loanBorrowedDisplay) els.loanBorrowedDisplay.textContent = formatCurrency(borrowed);
+            if (els.loanLimitDisplay) els.loanLimitDisplay.textContent = formatCurrency(limit);
+            if (els.loanInterestDisplay) els.loanInterestDisplay.textContent = `${interestPct}%`;
+            if (els.loanRemainLimitDisplay) els.loanRemainLimitDisplay.textContent = formatCurrency(remain);
+
+            // Dynamic Borrow Button Texts
+            const borrow10Val = Math.floor(remain * 0.1);
+            const borrow50Val = Math.floor(remain * 0.5);
+            if (els.btnBorrow10Pct) els.btnBorrow10Pct.textContent = `10% 대출 (+${formatCurrency(borrow10Val)})`;
+            if (els.btnBorrow50Pct) els.btnBorrow50Pct.textContent = `50% 대출 (+${formatCurrency(borrow50Val)})`;
+            if (els.btnBorrowMax) els.btnBorrowMax.textContent = `한도 채워서 대출 (100%)`;
+
+            // Dynamic Repay Button Texts
+            const repay10Val = Math.floor(borrowed * 0.1);
+            const repay50Val = Math.floor(borrowed * 0.5);
+            if (els.btnRepay10Pct) els.btnRepay10Pct.textContent = `10% 상환 (-${formatCurrency(repay10Val)})`;
+            if (els.btnRepay50Pct) els.btnRepay50Pct.textContent = `50% 상환 (-${formatCurrency(repay50Val)})`;
+            if (els.btnRepayMax) els.btnRepayMax.textContent = `전액 상환 (100% / -${formatCurrency(borrowed)})`;
+
+            // Render rank loan benefits guide
+            if (els.loanRankListContainer) {
+                els.loanRankListContainer.innerHTML = '';
+                const total = getTotalAsset();
+                ranks.forEach(r => {
+                    const isCurrent = total >= r.min;
+                    const div = document.createElement('div');
+                    div.className = `p-2 rounded-xl text-[10px] flex justify-between items-center ${isCurrent ? 'bg-indigo-50 border border-indigo-200 text-indigo-900 font-bold' : 'bg-gray-50 text-gray-500 opacity-60'}`;
+                    div.innerHTML = `
+                        <div class="flex items-center space-x-1.5">
+                            <span>${r.title}</span>
+                            ${isCurrent ? '<span class="bg-indigo-600 text-white text-[8px] px-1 rounded">현재</span>' : ''}
+                        </div>
+                        <div class="text-right">
+                            <span class="block font-black text-emerald-600">한도: ${formatCurrency(r.loanLimit)}</span>
+                            <span class="block text-amber-600">이율: ${(r.loanInterest*100).toFixed(0)}%/10s</span>
+                        </div>
+                    `;
+                    els.loanRankListContainer.appendChild(div);
+                });
             }
         }
 
@@ -832,10 +1017,13 @@
             const rankObj = getCurrentRankObj();
             const incomeMulti = getSkillEffect('incomeMulti');
 
-            if (els.cash) els.cash.textContent = formatCurrency(gameState.cash);
+            if (els.cash) {
+                els.cash.textContent = formatCurrency(gameState.cash);
+                if (gameState.cash < 0) els.cash.className = "font-black text-base sm:text-lg text-red-400 animate-pulse";
+                else els.cash.className = "font-black text-base sm:text-lg text-white";
+            }
             if (els.asset) els.asset.textContent = formatCurrency(totalAsset);
 
-            // Sync total profit rate to actual Stock performance vs invested
             let currentStockValue = 0;
             let investedStockValue = 0;
             gameState.stocks.forEach(s => {
@@ -845,13 +1033,25 @@
 
             if (els.profitRate) {
                 if (investedStockValue > 0) {
-                    const profitPct = ((currentStockValue - investedStockValue) / investedStockValue) * 100;
+                    const profitDiff = currentStockValue - investedStockValue;
+                    const profitPct = (profitDiff / investedStockValue) * 100;
                     const sign = profitPct >= 0 ? '+' : '';
+                    
                     els.profitRate.textContent = `주식수익률 ${sign}${profitPct.toFixed(1)}%`;
                     els.profitRate.className = profitPct >= 0 ? 'text-[10px] font-bold text-red-400' : 'text-[10px] font-bold text-blue-400';
+                    
+                    if (els.profitAmount) {
+                        const amountSign = profitDiff > 0 ? '+' : (profitDiff < 0 ? '-' : '');
+                        els.profitAmount.textContent = `${amountSign}${formatCurrency(Math.abs(profitDiff))}`;
+                        els.profitAmount.className = profitDiff >= 0 ? 'text-[9px] font-bold text-red-400/80' : 'text-[9px] font-bold text-blue-400/80';
+                    }
                 } else {
-                    els.profitRate.textContent = '수익률 0.0%';
+                    els.profitRate.textContent = '주식수익률 0.0%';
                     els.profitRate.className = 'text-[10px] font-bold text-gray-400';
+                    if (els.profitAmount) {
+                        els.profitAmount.textContent = '₩0';
+                        els.profitAmount.className = 'text-[9px] font-medium text-gray-500';
+                    }
                 }
             }
 
@@ -875,6 +1075,13 @@
 
             updateRankAndTheme();
             updateUpgradeUI();
+            updateLoanUI();
+
+            const flexTab = document.getElementById('tab-flex');
+            if (flexTab && !flexTab.classList.contains('hidden')) {
+                renderFlexList();
+            }
+
             saveGame();
         }
 
@@ -950,10 +1157,11 @@
             showClickEffect(x, y, gain);
         }
 
-        function updateMarketPrices() {
+        function processMarketTick(newsEvent = null) {
             let dividendTotal = 0;
             const stockBuff = getSkillEffect('stockBuff');
 
+            // 1. Process Stock Price Updates
             gameState.stocks.forEach(stock => {
                 if (stock.type === 'leverage' || stock.type === 'inverse') return;
 
@@ -961,26 +1169,39 @@
                 stock.history.push(oldPrice);
                 if (stock.history.length > 10) stock.history.shift();
 
-                let upChance = stock.type === 'etf' ? 0.65 : 0.5;
-                upChance += stockBuff; // Apply skill buff
-                let isUp = Math.random() < upChance;
-                
-                let changePercent = stock.type === 'etf' ? (Math.random() * 0.04) + 0.01 : (Math.random() * 0.08) + 0.01;
-                if (stock.id === 'stk_07') changePercent *= 2.5;
-                if (isUp) changePercent += (stockBuff * 0.5); // Boost up-days slightly
+                let changePercent = 0;
+                let isUp = true;
+
+                if (newsEvent && newsEvent.stockId === stock.id) {
+                    isUp = newsEvent.isGoodNews;
+                    changePercent = Math.abs(newsEvent.ratio);
+                    stock.newsTag = `${isUp ? '+' : ''}${(newsEvent.ratio * 100).toFixed(1)}%`;
+                    stock.isGoodNews = isUp;
+                } else {
+                    let upChance = stock.type === 'etf' ? 0.65 : 0.5;
+                    upChance += stockBuff; 
+                    isUp = Math.random() < upChance;
+                    
+                    changePercent = stock.type === 'etf' ? (Math.random() * 0.04) + 0.01 : (Math.random() * 0.08) + 0.01;
+                    if (stock.id === 'stk_07') changePercent *= 2.5; 
+                    if (isUp) changePercent += (stockBuff * 0.5);
+
+                    if (stock.newsTag) stock.newsTag = null;
+                }
 
                 const changeAmount = oldPrice * changePercent;
-
                 if (isUp) {
                     stock.price = Math.round(oldPrice + changeAmount);
                 } else {
                     stock.price = Math.max(1, Math.round(oldPrice - changeAmount));
                 }
 
-                if (stock.newsTag) stock.newsTag = null;
-                if (stock.type === 'dividend' && stock.owned > 0) dividendTotal += Math.round(stock.price * stock.owned * 0.005); 
+                if (stock.type === 'dividend' && stock.owned > 0) {
+                    dividendTotal += Math.round(stock.price * stock.owned * 0.005); 
+                }
             });
 
+            // Leverage and Inverse 3X sync
             const baseStock = gameState.stocks.find(s => s.id === 'stk_01');
             if (baseStock && baseStock.history.length > 0) {
                 const prevBase = baseStock.history[baseStock.history.length - 1];
@@ -1001,12 +1222,22 @@
                 }
             }
 
+            // 2. Process Loan Interest Deduction (마이너스 통장 연동)
+            if (gameState.borrowedAmount > 0) {
+                const rank = getCurrentRankObj();
+                const interestAmount = Math.floor(gameState.borrowedAmount * rank.loanInterest);
+                if (interestAmount > 0) {
+                    gameState.cash -= interestAmount;
+                    showLoanToast(`💸 대출 이자 발생: -${formatCurrency(interestAmount)} 차감!`);
+                }
+            }
+
             if (dividendTotal > 0) {
                 gameState.cash += dividendTotal;
                 showNewsToast(`💰 고배당주 분기 배당금 +${formatCurrency(dividendTotal)} 입금!`, true);
             }
 
-            if (els.newsTicker) {
+            if (els.newsTicker && !newsEvent) {
                 els.newsTicker.textContent = `[정규장] 주식 시세가 업데이트되었습니다.`;
                 if (els.newsTagBadge) {
                     els.newsTagBadge.textContent = '정규';
@@ -1014,9 +1245,151 @@
                 }
             }
 
+            updateDisplays();
             renderStockList();
             if (gameState.selectedStockId && els.tradeModal && !els.tradeModal.classList.contains('hidden')) {
                 updateModalInfo(); updateChart();
+            }
+        }
+
+        function updateMarketPrices() {
+            processMarketTick(null);
+        }
+
+        function triggerRandomNews() {
+            const normalStocks = gameState.stocks.filter(s => s.type !== 'leverage' && s.type !== 'inverse' && s.type !== 'etf');
+            const stock = normalStocks[Math.floor(Math.random() * normalStocks.length)];
+            const isGoodNews = Math.random() >= 0.45;
+
+            const goodNewsList = [
+                { text: `⚡ [속보] ${stock.name}, 글로벌 대박 계약으로 주가 폭등!`, ratio: 0.25 + Math.random() * 0.25 },
+                { text: `🚀 [속보] ${stock.name}, 3분기 어닝 서프라이즈 발표!`, ratio: 0.2 + Math.random() * 0.2 }
+            ];
+            const badNewsList = [
+                { text: `🚨 [속보] ${stock.name}, 악재 악성 루머로 매도세 폭주!`, ratio: -(0.15 + Math.random() * 0.2) },
+                { text: `📉 [속보] ${stock.name}, 실적 쇼크 및 경영진 악재 소식!`, ratio: -(0.2 + Math.random() * 0.2) }
+            ];
+
+            const selected = (isGoodNews ? goodNewsList : badNewsList)[Math.floor(Math.random() * (isGoodNews ? goodNewsList : badNewsList).length)];
+
+            processMarketTick({
+                stockId: stock.id,
+                isGoodNews: isGoodNews,
+                ratio: selected.ratio
+            });
+
+            gameState.updateTimer = 10;
+            if (els.marketTimer) els.marketTimer.textContent = `다음 변동: 10초`;
+
+            const updatedStock = gameState.stocks.find(s => s.id === stock.id);
+            const fullText = `${selected.text} (${updatedStock.name} ${updatedStock.newsTag})`;
+            
+            if (els.newsTicker) els.newsTicker.textContent = fullText;
+            if (els.newsTagBadge) {
+                els.newsTagBadge.textContent = '속보';
+                els.newsTagBadge.className = 'bg-red-500 text-white font-black px-1.5 py-0.5 rounded text-[10px] animate-pulse flex-shrink-0';
+            }
+
+            if (isGoodNews) audio.playNewsGood(); else audio.playNewsBad();
+            showNewsToast(fullText, isGoodNews);
+        }
+
+        function showNewsToast(msg, isGood) {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-40 left-0 right-0 mx-auto w-[85%] max-w-sm z-[100] px-3.5 py-2 rounded-2xl font-black text-xs text-white shadow-2xl transition-all duration-300 ${isGood ? 'bg-red-500 ring-4 ring-red-200' : 'bg-blue-600 ring-4 ring-blue-200'} animate-bounce flex items-center justify-center space-x-1.5 text-center break-keep cursor-pointer hover:scale-105 active:scale-95`;
+            toast.innerHTML = `<i class="fas ${isGood ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i><span>${msg}</span><span class="text-[9px] bg-black/20 px-1.5 py-0.5 rounded ml-1 font-normal">터치 시 이동</span>`;
+            
+            toast.addEventListener('click', () => {
+                const stockTabBtn = document.querySelector('.nav-btn[data-target="tab-stock"]');
+                if (stockTabBtn) stockTabBtn.click();
+                if (document.body.contains(toast)) document.body.removeChild(toast);
+            });
+
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'scale-90');
+                setTimeout(() => { if (document.body.contains(toast)) document.body.removeChild(toast); }, 300);
+            }, 3500);
+        }
+
+        function showLoanToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-40 left-0 right-0 mx-auto w-[85%] max-w-sm z-[100] px-3.5 py-2 rounded-2xl font-black text-xs text-white shadow-2xl transition-all duration-300 bg-indigo-600 ring-4 ring-indigo-200 animate-bounce flex items-center justify-center space-x-1.5 text-center break-keep cursor-pointer hover:scale-105 active:scale-95`;
+            toast.innerHTML = `<i class="fas fa-receipt"></i><span>${msg}</span><span class="text-[9px] bg-black/20 px-1.5 py-0.5 rounded ml-1 font-normal">터치 시 이동</span>`;
+            
+            toast.addEventListener('click', () => {
+                const loanTabBtn = document.querySelector('.nav-btn[data-target="tab-loan"]');
+                if (loanTabBtn) loanTabBtn.click();
+                if (document.body.contains(toast)) document.body.removeChild(toast);
+            });
+
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'scale-90');
+                setTimeout(() => { if (document.body.contains(toast)) document.body.removeChild(toast); }, 3500);
+            }, 3500);
+        }
+
+        function requestBorrowModal(ratio) {
+            audio.init();
+            const rank = getCurrentRankObj();
+            const currentBorrowed = gameState.borrowedAmount || 0;
+            const maxBorrowable = Math.max(0, rank.loanLimit - currentBorrowed);
+
+            if (maxBorrowable <= 0) {
+                audio.playError();
+                showLoanToast("⚠️ 현재 칭호의 대출 한도를 초과했습니다!");
+                return;
+            }
+
+            pendingBorrowAmount = Math.min(maxBorrowable, Math.floor(maxBorrowable * ratio));
+            if (pendingBorrowAmount <= 0) {
+                audio.playError();
+                showLoanToast("⚠️ 대출 가능 금액이 존재하지 않습니다.");
+                return;
+            }
+
+            if (els.borrowModalAmount) els.borrowModalAmount.textContent = formatCurrency(pendingBorrowAmount);
+            if (els.borrowModalInterest) els.borrowModalInterest.textContent = `${(rank.loanInterest * 100).toFixed(1)}%`;
+
+            if (els.borrowConfirmModal) els.borrowConfirmModal.classList.remove('hidden');
+        }
+
+        function executeBorrow() {
+            audio.init();
+            if (pendingBorrowAmount > 0) {
+                audio.playBuy();
+                gameState.borrowedAmount = (gameState.borrowedAmount || 0) + pendingBorrowAmount;
+                gameState.cash += pendingBorrowAmount;
+                pendingBorrowAmount = 0;
+                if (els.borrowConfirmModal) els.borrowConfirmModal.classList.add('hidden');
+                updateDisplays();
+                showLoanToast("✨ 대출금이 정상적으로 입금되었습니다!");
+            } else {
+                audio.playError();
+            }
+        }
+
+        function repayLoanRatio(ratio) {
+            audio.init();
+            const currentBorrowed = gameState.borrowedAmount || 0;
+            if (currentBorrowed <= 0) {
+                audio.playError();
+                showLoanToast("⚠️ 상환할 대출 원금이 없습니다!");
+                return;
+            }
+
+            const repayAmount = ratio >= 1.0 ? currentBorrowed : Math.floor(currentBorrowed * ratio);
+
+            if (repayAmount > 0) {
+                audio.playBuy();
+                gameState.borrowedAmount = Math.max(0, currentBorrowed - repayAmount);
+                // 보유 현금에서 전액 차감하여 이자로 인한 차액만큼 현금도 마이너스로 완벽 연동
+                gameState.cash -= repayAmount; 
+                updateDisplays();
+                showLoanToast(`💸 대출금 ${formatCurrency(repayAmount)} 상환 완료!`);
+            } else {
+                audio.playError();
             }
         }
 
@@ -1104,7 +1477,7 @@
                 els.flexList.appendChild(item);
             });
         }
-        
+
         function renderSkillList() {
             if (!els.skillListContainer) return;
             els.skillListContainer.innerHTML = '';
@@ -1120,7 +1493,7 @@
                                  'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed';
 
                 let effectDisplay = skill.format === "%" ? `+${(getSkillEffect(key)*100).toFixed(0)}%` : `+${getSkillEffect(key).toFixed(1)}`;
-                if(key === 'realEstateDiscount') effectDisplay = `-${(getSkillEffect(key)*100).toFixed(0)}%`; // Negative formatting
+                if(key === 'realEstateDiscount') effectDisplay = `-${(getSkillEffect(key)*100).toFixed(0)}%`;
                 
                 const item = document.createElement('div');
                 item.className = 'bg-white rounded-2xl p-3 shadow-sm border border-gray-200 flex justify-between items-center';
@@ -1177,7 +1550,7 @@
             const gain = calculatePrestigeGain();
             if (gain <= 0) return;
             
-            if(confirm(`정말로 환생하시겠습니까?\n모든 현금, 업그레이드, 주식, 부동산이 초기화되며 영구 카르마 ${gain}개를 얻습니다.`)) {
+            if(confirm(`정말로 환생하시겠습니까?\n모든 현금, 업그레이드, 대출금, 주식, 부동산이 초기화되며 영구 카르마 ${gain}개를 얻습니다.`)) {
                 audio.init(); audio.playPrestige();
                 
                 const savedKarma = gameState.karma + gain;
@@ -1199,53 +1572,6 @@
             }
         }
 
-        function triggerRandomNews() {
-            const normalStocks = gameState.stocks.filter(s => s.type !== 'leverage' && s.type !== 'inverse' && s.type !== 'etf');
-            const stock = normalStocks[Math.floor(Math.random() * normalStocks.length)];
-            const isGoodNews = Math.random() >= 0.45;
-
-            const goodNewsList = [
-                { text: `⚡ [속보] ${stock.name}, 글로벌 대박 계약으로 주가 폭등!`, ratio: 0.25 + Math.random() * 0.25 },
-                { text: `🚀 [속보] ${stock.name}, 3분기 어닝 서프라이즈 발표!`, ratio: 0.2 + Math.random() * 0.2 }
-            ];
-            const badNewsList = [
-                { text: `🚨 [속보] ${stock.name}, 악재 악성 루머로 매도세 폭주!`, ratio: -(0.15 + Math.random() * 0.2) },
-                { text: `📉 [속보] ${stock.name}, 실적 쇼크 및 경영진 악재 소식!`, ratio: -(0.2 + Math.random() * 0.2) }
-            ];
-
-            const selected = (isGoodNews ? goodNewsList : badNewsList)[Math.floor(Math.random() * (isGoodNews ? goodNewsList : badNewsList).length)];
-
-            const oldPrice = stock.price;
-            stock.history.push(oldPrice);
-            if (stock.history.length > 10) stock.history.shift();
-
-            const newPrice = Math.max(1, Math.round(oldPrice * (1 + selected.ratio)));
-            const actualChangePct = (((newPrice - oldPrice) / oldPrice) * 100).toFixed(1);
-            const sign = actualChangePct >= 0 ? '+' : '';
-
-            stock.price = newPrice;
-            stock.newsTag = `${sign}${actualChangePct}%`;
-            stock.isGoodNews = isGoodNews;
-
-            gameState.updateTimer = 10;
-            if (els.marketTimer) els.marketTimer.textContent = `다음 변동: 10초`;
-
-            const fullText = `${selected.text} (${stock.name} ${sign}${actualChangePct}%)`;
-            if (els.newsTicker) els.newsTicker.textContent = fullText;
-            if (els.newsTagBadge) {
-                els.newsTagBadge.textContent = '속보';
-                els.newsTagBadge.className = 'bg-red-500 text-white font-black px-1.5 py-0.5 rounded text-[10px] animate-pulse flex-shrink-0';
-            }
-
-            if (isGoodNews) audio.playNewsGood(); else audio.playNewsBad();
-
-            showNewsToast(fullText, isGoodNews);
-            renderStockList();
-            if (gameState.selectedStockId && els.tradeModal && !els.tradeModal.classList.contains('hidden')) {
-                updateModalInfo(); updateChart();
-            }
-        }
-        
         function updateChart() {
             const stock = gameState.stocks.find(s => s.id === gameState.selectedStockId);
             if (!stock) return;
@@ -1331,17 +1657,6 @@
             els.modalMessage.className = `text-center py-1.5 text-xs font-bold text-white rounded-b-2xl ${isError ? 'bg-red-500' : 'bg-emerald-500'}`;
             els.modalMessage.classList.remove('hidden');
             setTimeout(() => { els.modalMessage.classList.add('hidden'); }, 1500);
-        }
-
-        function showNewsToast(msg, isGood) {
-            const toast = document.createElement('div');
-            toast.className = `fixed top-20 left-0 right-0 mx-auto w-[85%] max-w-sm z-[100] px-3.5 py-2 rounded-2xl font-black text-xs text-white shadow-2xl transition-all duration-300 ${isGood ? 'bg-red-500 ring-4 ring-red-200' : 'bg-blue-600 ring-4 ring-blue-200'} animate-bounce flex items-center justify-center space-x-1.5 text-center break-keep`;
-            toast.innerHTML = `<i class="fas ${isGood ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i><span>${msg}</span>`;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'scale-90');
-                setTimeout(() => { if (document.body.contains(toast)) document.body.removeChild(toast); }, 300);
-            }, 3200);
         }
 
         function buyStock(amount) {
@@ -1474,10 +1789,19 @@
         function saveGame() {
             try {
                 localStorage.setItem('stock_clicker_save', JSON.stringify({
-                    cash: gameState.cash, initialCash: gameState.initialCash,
+                    cash: gameState.cash, 
+                    initialCash: gameState.initialCash,
+                    borrowedAmount: gameState.borrowedAmount || 0,
                     clickUpg: gameState.clickUpg, autoUpg: gameState.autoUpg,
                     feverGaugeUpg: gameState.feverGaugeUpg, feverMultiUpg: gameState.feverMultiUpg,
-                    stocks: gameState.stocks, realEstate: gameState.realEstate,
+                    stocks: gameState.stocks.map(s => ({
+                        id: s.id,
+                        owned: s.owned,
+                        avgPrice: s.avgPrice,
+                        price: s.price,
+                        history: s.history
+                    })), 
+                    realEstate: gameState.realEstate,
                     nickname: gameState.nickname, karma: gameState.karma, skills: gameState.skills,
                     audioSettings: { bgm: audio.bgmVolume, sfx: audio.sfxVolume }
                 }));
@@ -1489,16 +1813,28 @@
                 const saved = localStorage.getItem('stock_clicker_save');
                 if (saved) {
                     const parsed = JSON.parse(saved);
-                    gameState.cash = parsed.cash || 0; gameState.initialCash = parsed.initialCash !== undefined ? parsed.initialCash : gameState.cash;
-                    if (parsed.clickUpg) gameState.clickUpg = parsed.clickUpg; if (parsed.autoUpg) gameState.autoUpg = parsed.autoUpg;
-                    if (parsed.feverGaugeUpg) gameState.feverGaugeUpg = parsed.feverGaugeUpg; if (parsed.feverMultiUpg) gameState.feverMultiUpg = parsed.feverMultiUpg;
+                    gameState.cash = parsed.cash || 0; 
+                    gameState.initialCash = parsed.initialCash !== undefined ? parsed.initialCash : gameState.cash;
+                    if (parsed.borrowedAmount !== undefined) gameState.borrowedAmount = parsed.borrowedAmount;
+                    if (parsed.clickUpg) gameState.clickUpg = parsed.clickUpg; 
+                    if (parsed.autoUpg) gameState.autoUpg = parsed.autoUpg;
+                    if (parsed.feverGaugeUpg) gameState.feverGaugeUpg = parsed.feverGaugeUpg; 
+                    if (parsed.feverMultiUpg) gameState.feverMultiUpg = parsed.feverMultiUpg;
                     if (parsed.nickname) gameState.nickname = parsed.nickname;
                     if (parsed.karma) gameState.karma = parsed.karma;
                     if (parsed.skills) {
                         Object.keys(gameState.skills).forEach(key => { if(parsed.skills[key]) gameState.skills[key].level = parsed.skills[key].level; });
                     }
                     if (parsed.stocks) {
-                        parsed.stocks.forEach(s => { const target = gameState.stocks.find(st => st.id === s.id); if (target) { target.owned = s.owned || 0; target.avgPrice = s.avgPrice || 0; } });
+                        parsed.stocks.forEach(s => { 
+                            const target = gameState.stocks.find(st => st.id === s.id); 
+                            if (target) { 
+                                target.owned = s.owned || 0; 
+                                target.avgPrice = s.avgPrice || 0; 
+                                if (s.price !== undefined && s.price > 0) target.price = s.price;
+                                if (s.history && Array.isArray(s.history)) target.history = s.history;
+                            } 
+                        });
                     }
                     if (parsed.realEstate) {
                         parsed.realEstate.forEach(r => { const target = gameState.realEstate.find(re => re.id === r.id); if (target) target.owned = r.owned || 0; });
@@ -1512,7 +1848,14 @@
 
         function setupEventListeners() {
             const navBtns = document.querySelectorAll('.nav-btn');
-            const tabs = { 'tab-work': document.getElementById('tab-work'), 'tab-upgrade': document.getElementById('tab-upgrade'), 'tab-stock': document.getElementById('tab-stock'), 'tab-flex': document.getElementById('tab-flex'), 'tab-rebirth': document.getElementById('tab-rebirth') };
+            const tabs = { 
+                'tab-work': document.getElementById('tab-work'), 
+                'tab-upgrade': document.getElementById('tab-upgrade'), 
+                'tab-stock': document.getElementById('tab-stock'), 
+                'tab-flex': document.getElementById('tab-flex'), 
+                'tab-loan': document.getElementById('tab-loan'), 
+                'tab-rebirth': document.getElementById('tab-rebirth') 
+            };
 
             navBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -1539,6 +1882,7 @@
                     if (target === 'tab-stock') renderStockList();
                     if (target === 'tab-upgrade') updateUpgradeUI();
                     if (target === 'tab-flex') renderFlexList();
+                    if (target === 'tab-loan') updateLoanUI();
                     if (target === 'tab-rebirth') { updateUpgradeUI(); renderSkillList(); }
                 });
             });
@@ -1555,6 +1899,18 @@
             if (els.btnUpgFeverGauge) els.btnUpgFeverGauge.addEventListener('click', () => { audio.init(); const cost = getUpgCost(gameState.feverGaugeUpg); if (gameState.cash >= cost) { audio.playBuy(); gameState.cash -= cost; gameState.feverGaugeUpg.level++; updateDisplays(); } else audio.playError(); });
             if (els.btnUpgFeverMulti) els.btnUpgFeverMulti.addEventListener('click', () => { audio.init(); const cost = getUpgCost(gameState.feverMultiUpg); if (gameState.cash >= cost) { audio.playBuy(); gameState.cash -= cost; gameState.feverMultiUpg.level++; updateDisplays(); } else audio.playError(); });
 
+            // Percentage Loan Listeners
+            if (els.btnBorrow10Pct) els.btnBorrow10Pct.addEventListener('click', () => requestBorrowModal(0.1));
+            if (els.btnBorrow50Pct) els.btnBorrow50Pct.addEventListener('click', () => requestBorrowModal(0.5));
+            if (els.btnBorrowMax) els.btnBorrowMax.addEventListener('click', () => requestBorrowModal(1.0));
+
+            if (els.btnCancelBorrow) els.btnCancelBorrow.addEventListener('click', () => { audio.playClick(); if (els.borrowConfirmModal) els.borrowConfirmModal.classList.add('hidden'); pendingBorrowAmount = 0; });
+            if (els.btnConfirmBorrow) els.btnConfirmBorrow.addEventListener('click', executeBorrow);
+
+            if (els.btnRepay10Pct) els.btnRepay10Pct.addEventListener('click', () => repayLoanRatio(0.1));
+            if (els.btnRepay50Pct) els.btnRepay50Pct.addEventListener('click', () => repayLoanRatio(0.5));
+            if (els.btnRepayMax) els.btnRepayMax.addEventListener('click', () => repayLoanRatio(1.0));
+
             if (els.btnOpenSettings) els.btnOpenSettings.addEventListener('click', () => { audio.init(); audio.playClick(); if (els.settingsModal) els.settingsModal.classList.remove('hidden'); });
             if (els.closeSettingsBtn) els.closeSettingsBtn.addEventListener('click', () => { audio.playClick(); if (els.settingsModal) els.settingsModal.classList.add('hidden'); });
 
@@ -1569,8 +1925,16 @@
                 els.sfxSlider.addEventListener('input', (e) => { audio.init(); audio.sfxVolume = e.target.value / 100; if (els.sfxVolText) els.sfxVolText.textContent = `${e.target.value}%`; audio.updateVolumes(); saveGame(); });
             }
 
-            if (els.btnSaveNickname) els.btnSaveNickname.addEventListener('click', () => { audio.init(); const val = els.settingNicknameInput.value.trim(); if (val) { audio.playBuy(); gameState.nickname = val; syncUserToFirebase(); saveGame(); alert("닉네임이 변경되었습니다."); }});
-            if (els.btnResetGame) els.btnResetGame.addEventListener('click', () => { if (confirm("정말로 모든 게임 데이터를 삭제하시겠습니까?")) { localStorage.removeItem('stock_clicker_save'); location.reload(); }});
+            if (els.btnSaveNickname) els.btnSaveNickname.addEventListener('click', () => { audio.init(); const val = els.settingNicknameInput.value.trim(); if (val) { audio.playBuy(); gameState.nickname = val; syncUserToFirebase(); saveGame(); showNewsToast("닉네임이 변경되었습니다.", true); }});
+            
+            // Reset Confirmation Modal Handlers
+            if (els.btnResetGame) els.btnResetGame.addEventListener('click', () => { audio.init(); audio.playClick(); if (els.resetConfirmModal) els.resetConfirmModal.classList.remove('hidden'); });
+            if (els.btnCancelReset) els.btnCancelReset.addEventListener('click', () => { audio.playClick(); if (els.resetConfirmModal) els.resetConfirmModal.classList.add('hidden'); });
+            if (els.btnConfirmReset) els.btnConfirmReset.addEventListener('click', () => {
+                audio.playClick();
+                localStorage.removeItem('stock_clicker_save');
+                location.reload();
+            });
             
             if (els.btnDoPrestige) els.btnDoPrestige.addEventListener('click', executePrestige);
 
