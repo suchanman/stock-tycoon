@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>주식 노가다 타이쿤</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Tone.js for Sound Effects & Synthesizer BGM -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap');
         
@@ -19,6 +20,15 @@
             user-select: none;
             -webkit-user-select: none;
             -webkit-touch-callout: none;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
         }
 
         body {
@@ -58,7 +68,7 @@
         ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 9999px; }
     </style>
 </head>
-<body class="flex flex-col h-screen max-w-md mx-auto shadow-2xl relative overflow-hidden select-none theme-0" id="appBody">
+<body class="flex flex-col h-full max-w-md mx-auto shadow-2xl relative overflow-hidden select-none theme-0" id="appBody">
 
     <!-- Header Section -->
     <header class="bg-blue-900/90 text-white p-3.5 shadow-lg z-20 flex-shrink-0 relative backdrop-blur-md border-b border-blue-800">
@@ -68,15 +78,15 @@
                 <span class="text-white drop-shadow-md">주식 노가다 타이쿤</span>
             </h1>
             <div class="flex items-center space-x-1.5">
-                <button id="btnOpenLeaderboard" class="bg-yellow-500 hover:bg-yellow-600 active:scale-95 text-gray-900 text-[11px] font-black px-2.5 py-1 rounded-full shadow-sm flex items-center space-x-1 transition-all">
+                <button id="btnOpenLeaderboard" class="bg-yellow-500 hover:bg-yellow-600 active:scale-95 text-gray-900 text-[11px] font-black px-2.5 py-1 rounded-full shadow-sm flex items-center space-x-1 transition-all cursor-pointer">
                     <i class="fas fa-trophy text-amber-900"></i>
                     <span>랭킹</span>
                 </button>
-                <button id="btnOpenRankModal" class="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-gray-900 text-[11px] font-black px-2.5 py-1 rounded-full shadow-sm flex items-center space-x-1 active:scale-95 transition-all border border-yellow-300">
+                <button id="btnOpenRankModal" class="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-gray-900 text-[11px] font-black px-2.5 py-1 rounded-full shadow-sm flex items-center space-x-1 active:scale-95 transition-all border border-yellow-300 cursor-pointer">
                     <span id="rankDisplay">🌱 흙수저</span>
                     <i class="fas fa-search text-[9px] opacity-70"></i>
                 </button>
-                <button id="btnOpenSettings" class="text-blue-200 hover:text-white transition-colors p-1 active:scale-95">
+                <button id="btnOpenSettings" class="text-blue-200 hover:text-white transition-colors p-1 active:scale-95 cursor-pointer">
                     <i class="fas fa-cog"></i>
                 </button>
             </div>
@@ -116,8 +126,8 @@
     <main class="flex-1 relative overflow-hidden bg-white/90 backdrop-blur-md flex flex-col rounded-t-3xl -mt-4 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.1)]">
         
         <!-- Tab 1: Work (Clicker) -->
-        <div id="tab-work" class="w-full h-full flex flex-col items-center justify-between p-5 overflow-y-auto">
-            <div class="text-center mt-2 w-full">
+        <div id="tab-work" class="w-full h-full flex flex-col items-center justify-between p-5 overflow-y-auto pb-24">
+            <div class="text-center mt-2 w-full flex-shrink-0">
                 <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full inline-block mb-1.5 shadow-sm">노가다 모드</span>
                 <h2 class="text-xl font-black text-gray-800">터치해서 돈 벌기</h2>
                 <div class="mt-2 w-full max-w-xs mx-auto bg-gray-200 rounded-full h-3.5 p-0.5 shadow-inner relative overflow-hidden">
@@ -126,8 +136,8 @@
                 </div>
             </div>
 
-            <div class="relative my-auto flex items-center justify-center">
-                <button id="workBtn" class="w-56 h-56 sm:w-60 sm:h-60 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-full shadow-[0_15px_30px_rgba(245,158,11,0.4)] flex flex-col items-center justify-center transition-transform active:scale-90 focus:outline-none border-4 border-yellow-200 relative group cursor-pointer">
+            <div class="relative my-auto flex items-center justify-center py-4">
+                <button id="workBtn" class="w-52 h-52 sm:w-60 sm:h-60 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-full shadow-[0_15px_30px_rgba(245,158,11,0.4)] flex flex-col items-center justify-center transition-transform active:scale-90 focus:outline-none border-4 border-yellow-200 relative group cursor-pointer">
                     <i id="workBtnIcon" class="fas fa-hand-pointer text-5xl text-white mb-2 drop-shadow-lg group-active:scale-95 transition-transform"></i>
                     <span id="workBtnText" class="text-white font-black text-2xl drop-shadow-md">CLICK!</span>
                     <div class="absolute -bottom-4 bg-white text-orange-600 px-4 py-1.5 rounded-full text-xs font-black shadow-lg border border-orange-200 flex items-center space-x-1">
@@ -137,12 +147,12 @@
                 </button>
             </div>
 
-            <div id="workerAvatarArea" class="hidden mb-2 bg-purple-50 rounded-2xl p-2 border border-purple-100 flex items-center justify-center space-x-2 animate-bounce">
+            <div id="workerAvatarArea" class="hidden mb-2 bg-purple-50 rounded-2xl p-2 border border-purple-100 flex items-center justify-center space-x-2 animate-bounce flex-shrink-0">
                 <i class="fas fa-robot text-purple-500 text-lg"></i>
                 <span class="text-[10px] font-bold text-purple-700">오토 봇 열일 중...</span>
             </div>
 
-            <div class="bg-white/80 backdrop-blur-sm rounded-xl p-2.5 border border-gray-200 text-center w-full mb-1 shadow-sm">
+            <div class="bg-white/80 backdrop-blur-sm rounded-xl p-2.5 border border-gray-200 text-center w-full mb-1 shadow-sm flex-shrink-0">
                 <div class="flex justify-around text-xs text-gray-600">
                     <div>
                         <span class="text-gray-400 block text-[10px]">초당 오토 수익</span>
@@ -158,7 +168,7 @@
         </div>
 
         <!-- Tab 2: Upgrade -->
-        <div id="tab-upgrade" class="w-full h-full hidden flex-col p-4 overflow-y-auto space-y-3">
+        <div id="tab-upgrade" class="w-full h-full hidden flex-col p-4 overflow-y-auto space-y-3 pb-24">
             <div class="px-1 flex-shrink-0">
                 <h2 class="text-xl font-black text-gray-800">능력치 강화</h2>
                 <p class="text-xs text-gray-500 mt-0.5">수익 효율과 피버 모드를 크게 강화하세요!</p>
@@ -228,7 +238,7 @@
         </div>
 
         <!-- Tab 3: Stock Market -->
-        <div id="tab-stock" class="w-full h-full hidden flex-col p-4 overflow-hidden">
+        <div id="tab-stock" class="w-full h-full hidden flex-col p-4 overflow-hidden pb-24">
             <div class="flex justify-between items-end mb-3 px-1 flex-shrink-0">
                 <div>
                     <h2 class="text-xl font-black text-gray-800">주식 시장</h2>
@@ -242,7 +252,7 @@
         </div>
 
         <!-- Tab 4: Real Estate & FLEX -->
-        <div id="tab-flex" class="w-full h-full hidden flex-col p-4 overflow-y-auto space-y-3">
+        <div id="tab-flex" class="w-full h-full hidden flex-col p-4 overflow-y-auto space-y-3 pb-24">
             <div class="px-1 flex-shrink-0">
                 <h2 class="text-xl font-black text-gray-800">부동산 & FLEX</h2>
                 <p class="text-xs text-gray-500 mt-0.5">자산을 매입하여 지속적인 임대 수익을 올리세요!</p>
@@ -251,7 +261,7 @@
         </div>
 
         <!-- Tab 5: Bank Loan (대출) -->
-        <div id="tab-loan" class="w-full h-full hidden flex-col p-4 overflow-y-auto space-y-3">
+        <div id="tab-loan" class="w-full h-full hidden flex-col p-4 overflow-y-auto space-y-3 pb-24">
             <div class="px-1 flex-shrink-0">
                 <h2 class="text-xl font-black text-gray-800">개미 대출 은행</h2>
                 <p class="text-xs text-gray-500 mt-0.5">급전이 필요할 때 대출을 이용하세요. (10초마다 이자 발생)</p>
@@ -279,31 +289,47 @@
                 </div>
             </div>
 
-            <!-- Percentage Loan Action Buttons -->
+            <!-- Percentage Loan Action Steppers -->
             <div class="grid grid-cols-2 gap-3 flex-shrink-0">
                 <!-- Borrow Box -->
-                <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-200 flex flex-col justify-between">
+                <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-200 flex flex-col justify-between">
                     <div>
                         <h3 class="font-bold text-gray-800 text-xs flex items-center"><i class="fas fa-hand-holding-dollar text-indigo-500 mr-1"></i>대출 받기</h3>
-                        <p class="text-[9px] text-gray-400 mt-0.5">남은 한도 기준 대출 실행</p>
+                        <p class="text-[9px] text-gray-400 mt-0.5">남은 한도 기준 대출 비율 설정</p>
                     </div>
-                    <div class="space-y-1.5 mt-2">
-                        <button id="btnBorrow10Pct" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[11px] py-1.5 rounded-lg border border-indigo-200 active:scale-95 transition-all text-left px-2 truncate">10% 대출 (+₩0)</button>
-                        <button id="btnBorrow50Pct" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[11px] py-1.5 rounded-lg border border-indigo-200 active:scale-95 transition-all text-left px-2 truncate">50% 대출 (+₩0)</button>
-                        <button id="btnBorrowMax" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs py-2 rounded-xl active:scale-95 transition-all shadow-sm truncate">한도 채워서 대출 (100%)</button>
+                    <div class="space-y-2 mt-3">
+                        <div class="flex items-center justify-between bg-indigo-50/70 p-2 rounded-xl border border-indigo-100">
+                            <button id="btnBorrowDec" class="w-8 h-8 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black text-sm rounded-lg flex items-center justify-center transition-all shadow-sm cursor-pointer">-</button>
+                            <div class="text-center truncate px-1">
+                                <span id="borrowPctText" class="text-xs font-black text-indigo-900 block">100%</span>
+                                <span id="borrowPctValText" class="text-[9px] font-bold text-indigo-600 block truncate">₩0</span>
+                            </div>
+                            <button id="btnBorrowInc" class="w-8 h-8 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black text-sm rounded-lg flex items-center justify-center transition-all shadow-sm cursor-pointer">+</button>
+                        </div>
+                        <button id="btnBorrowAction" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs py-2.5 rounded-xl active:scale-95 transition-all shadow-md truncate cursor-pointer">
+                            대출 받기
+                        </button>
                     </div>
                 </div>
 
                 <!-- Repay Box -->
-                <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-200 flex flex-col justify-between">
+                <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-200 flex flex-col justify-between">
                     <div>
                         <h3 class="font-bold text-gray-800 text-xs flex items-center"><i class="fas fa-piggy-bank text-emerald-500 mr-1"></i>대출 상환하기</h3>
-                        <p class="text-[9px] text-gray-400 mt-0.5">원금 상환 (부족 시 현금 마이너스)</p>
+                        <p class="text-[9px] text-gray-400 mt-0.5">대출 원금 기준 상환 비율 설정</p>
                     </div>
-                    <div class="space-y-1.5 mt-2">
-                        <button id="btnRepay10Pct" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] py-1.5 rounded-lg border border-emerald-200 active:scale-95 transition-all text-left px-2 truncate">10% 상환 (-₩0)</button>
-                        <button id="btnRepay50Pct" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] py-1.5 rounded-lg border border-emerald-200 active:scale-95 transition-all text-left px-2 truncate">50% 상환 (-₩0)</button>
-                        <button id="btnRepayMax" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-2 rounded-xl active:scale-95 transition-all shadow-sm truncate">전액 상환 (100%)</button>
+                    <div class="space-y-2 mt-3">
+                        <div class="flex items-center justify-between bg-emerald-50/70 p-2 rounded-xl border border-emerald-100">
+                            <button id="btnRepayDec" class="w-8 h-8 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-sm rounded-lg flex items-center justify-center transition-all shadow-sm cursor-pointer">-</button>
+                            <div class="text-center truncate px-1">
+                                <span id="repayPctText" class="text-xs font-black text-emerald-900 block">100%</span>
+                                <span id="repayPctValText" class="text-[9px] font-bold text-emerald-600 block truncate">₩0</span>
+                            </div>
+                            <button id="btnRepayInc" class="w-8 h-8 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-sm rounded-lg flex items-center justify-center transition-all shadow-sm cursor-pointer">+</button>
+                        </div>
+                        <button id="btnRepayAction" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-2.5 rounded-xl active:scale-95 transition-all shadow-md truncate cursor-pointer">
+                            대출 상환
+                        </button>
                     </div>
                 </div>
             </div>
@@ -311,14 +337,12 @@
             <!-- Rank Loan Benefits Guide List -->
             <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-200 flex-1 overflow-y-auto">
                 <h3 class="font-bold text-gray-800 text-xs mb-2 flex items-center"><i class="fas fa-list-check text-indigo-500 mr-1"></i>칭호별 대출 우대 가이드</h3>
-                <div id="loanRankListContainer" class="space-y-1.5">
-                    <!-- Injected via JS -->
-                </div>
+                <div id="loanRankListContainer" class="space-y-1.5"></div>
             </div>
         </div>
 
         <!-- Tab 6: Rebirth (Prestige) -->
-        <div id="tab-rebirth" class="w-full h-full hidden flex-col p-4 overflow-y-auto space-y-4">
+        <div id="tab-rebirth" class="w-full h-full hidden flex-col p-4 overflow-y-auto space-y-4 pb-24">
             <div class="px-1 flex-shrink-0">
                 <h2 class="text-xl font-black text-gray-800">금수저 환생</h2>
                 <p class="text-xs text-gray-500 mt-0.5">모든 것을 초기화하고 <span class="text-emerald-600 font-bold">영구적인 힘</span>을 얻습니다.</p>
@@ -332,7 +356,7 @@
                         <i class="fas fa-gem text-xl mr-1"></i><span id="prestigeGainEstimate">0</span>
                     </div>
                     <p class="text-[9px] text-gray-400 mb-3">* 환생을 위해선 최소 ₩100,000,000의 총 자산이 필요합니다.</p>
-                    <button id="btnDoPrestige" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-2.5 rounded-xl transition-all active:scale-95 shadow-md">
+                    <button id="btnDoPrestige" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-2.5 rounded-xl transition-all active:scale-95 shadow-md cursor-pointer">
                         환생 실행하기
                     </button>
                 </div>
@@ -397,18 +421,18 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-2">
-                <button id="btnCancelBorrow" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs">취소</button>
-                <button id="btnConfirmBorrow" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs shadow-md">대출 실행</button>
+                <button id="btnCancelBorrow" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs cursor-pointer">취소</button>
+                <button id="btnConfirmBorrow" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs shadow-md cursor-pointer">대출 실행</button>
             </div>
         </div>
     </div>
 
     <!-- Settings Modal -->
     <div id="settingsModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+        <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div class="bg-gray-50 p-4 border-b border-gray-100 flex justify-between items-center">
                 <h3 class="font-black text-base text-gray-800"><i class="fas fa-cog text-gray-500 mr-1.5"></i>게임 설정</h3>
-                <button id="closeSettingsBtn" class="text-gray-400 hover:text-gray-600 p-1"><i class="fas fa-times text-lg"></i></button>
+                <button id="closeSettingsBtn" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"><i class="fas fa-times text-lg"></i></button>
             </div>
             <div class="p-4 space-y-4 overflow-y-auto max-h-[70vh]">
                 <div class="space-y-2 border-b border-gray-100 pb-4">
@@ -429,12 +453,12 @@
                     <span class="font-bold text-gray-800 text-xs flex items-center space-x-2"><i class="fas fa-user text-purple-500"></i><span>랭킹 닉네임</span></span>
                     <div class="flex space-x-2">
                         <input type="text" id="settingNicknameInput" maxlength="10" placeholder="닉네임 입력" class="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-800 focus:outline-none focus:border-blue-500">
-                        <button id="btnSaveNickname" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl active:scale-95 transition-all">변경</button>
+                        <button id="btnSaveNickname" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl active:scale-95 transition-all cursor-pointer">변경</button>
                     </div>
                 </div>
                 <div class="space-y-2">
                     <span class="font-bold text-red-600 text-xs flex items-center space-x-2"><i class="fas fa-trash-can"></i><span>데이터 초기화</span></span>
-                    <button id="btnResetGame" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold text-xs py-2.5 rounded-xl active:scale-95 transition-all">모든 데이터 삭제</button>
+                    <button id="btnResetGame" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold text-xs py-2.5 rounded-xl active:scale-95 transition-all cursor-pointer">모든 데이터 삭제</button>
                 </div>
             </div>
         </div>
@@ -442,13 +466,13 @@
 
     <!-- Trade Modal with Chart -->
     <div id="tradeModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0" id="tradeModalContent">
+        <div class="bg-white w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0 max-h-[90vh] overflow-y-auto" id="tradeModalContent">
             <div class="bg-gray-50 p-3.5 border-b border-gray-100 flex justify-between items-center">
                 <div class="flex items-center space-x-1.5">
                     <h3 class="font-black text-base text-gray-800" id="modalStockName">주식 이름</h3>
                     <span id="modalStockBadge" class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-600">일반</span>
                 </div>
-                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 p-1"><i class="fas fa-times text-lg"></i></button>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"><i class="fas fa-times text-lg"></i></button>
             </div>
             
             <div class="p-4">
@@ -474,18 +498,18 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-2.5">
-                    <button id="buyBtn" class="bg-red-500 hover:bg-red-600 active:scale-95 text-white font-bold py-2.5 rounded-xl shadow-sm transition-all flex flex-col items-center justify-center">
+                    <button id="buyBtn" class="bg-red-500 hover:bg-red-600 active:scale-95 text-white font-bold py-2.5 rounded-xl shadow-sm transition-all flex flex-col items-center justify-center cursor-pointer">
                         <span class="text-xs">1주 매수</span>
                         <span class="text-[9px] text-red-100 font-normal mt-0.5" id="buyCost">₩0</span>
                     </button>
-                    <button id="sellBtn" class="bg-blue-500 hover:bg-blue-600 active:scale-95 text-white font-bold py-2.5 rounded-xl shadow-sm transition-all flex flex-col items-center justify-center">
+                    <button id="sellBtn" class="bg-blue-500 hover:bg-blue-600 active:scale-95 text-white font-bold py-2.5 rounded-xl shadow-sm transition-all flex flex-col items-center justify-center cursor-pointer">
                         <span class="text-xs">1주 매도</span>
                         <span class="text-[9px] text-blue-100 font-normal mt-0.5" id="sellRevenue">₩0</span>
                     </button>
                 </div>
                 <div class="grid grid-cols-2 gap-2.5 mt-2.5">
-                    <button id="buyMaxBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded-xl transition-colors">최대 매수</button>
-                    <button id="sellMaxBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded-xl transition-colors">전량 매도</button>
+                    <button id="buyMaxBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded-xl transition-colors cursor-pointer">최대 매수</button>
+                    <button id="sellMaxBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 rounded-xl transition-colors cursor-pointer">전량 매도</button>
                 </div>
             </div>
             <div id="modalMessage" class="text-center py-1.5 text-xs font-bold text-white hidden"></div>
@@ -497,7 +521,7 @@
         <div class="bg-white w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
             <div class="bg-gray-50 p-4 border-b border-gray-100 flex justify-between items-center flex-shrink-0">
                 <h3 class="font-black text-base text-gray-800">🏆 칭호 컬렉션 & 보유효과</h3>
-                <button id="closeRankModalBtn" class="text-gray-400 hover:text-gray-600 p-1"><i class="fas fa-times text-lg"></i></button>
+                <button id="closeRankModalBtn" class="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"><i class="fas fa-times text-lg"></i></button>
             </div>
             <div id="rankListContainer" class="p-4 overflow-y-auto space-y-2.5 flex-1"></div>
         </div>
@@ -511,7 +535,7 @@
                     <h3 class="font-black text-base flex items-center space-x-1.5"><i class="fas fa-trophy text-amber-900"></i><span>실시간 랭킹 보드</span></h3>
                     <p class="text-[10px] text-yellow-950 font-bold mt-0.5">전 세계 개미 투자자 자산 순위</p>
                 </div>
-                <button id="closeLeaderboardBtn" class="text-yellow-950 hover:text-black p-1"><i class="fas fa-times text-lg"></i></button>
+                <button id="closeLeaderboardBtn" class="text-yellow-950 hover:text-black p-1 cursor-pointer"><i class="fas fa-times text-lg"></i></button>
             </div>
             <div id="leaderboardList" class="p-4 overflow-y-auto space-y-2 flex-1"></div>
         </div>
@@ -526,7 +550,7 @@
                 <p class="text-xs text-gray-500 mt-1">실시간 랭킹 보드에 표기될 닉네임을 입력하세요.</p>
             </div>
             <input type="text" id="nicknameInput" maxlength="10" placeholder="닉네임 (최대 10자)" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-3 py-2.5 text-center text-sm font-bold text-gray-800 focus:outline-none focus:border-blue-500">
-            <button id="btnSubmitNickname" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs">랭킹 등록하기</button>
+            <button id="btnSubmitNickname" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs cursor-pointer">랭킹 등록하기</button>
         </div>
     </div>
 
@@ -539,8 +563,8 @@
                 <p class="text-xs text-gray-500 mt-1">정말로 모든 게임 데이터를 삭제하고 초기화하시겠습니까? 이 작업은 복구할 수 없습니다.</p>
             </div>
             <div class="grid grid-cols-2 gap-2">
-                <button id="btnCancelReset" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs">취소</button>
-                <button id="btnConfirmReset" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs">모두 삭제</button>
+                <button id="btnCancelReset" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs cursor-pointer">취소</button>
+                <button id="btnConfirmReset" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs cursor-pointer">모두 삭제</button>
             </div>
         </div>
     </div>
@@ -685,7 +709,9 @@
         });
 
         let gameState = getInitialGameState();
-        let pendingBorrowAmount = 0; // State variable for borrow confirmation
+        let pendingBorrowAmount = 0;
+        let borrowRatio = 100;
+        let repayRatio = 100;
 
         const ranks = [
             { min: 0, title: '🌱 흙수저', clickBuff: 0, reBuff: 0, themeIdx: 0, loanLimit: 1000000, loanInterest: 0.20 },
@@ -776,12 +802,18 @@
                 loanInterestDisplay: document.getElementById('loanInterestDisplay'),
                 loanLimitDisplay: document.getElementById('loanLimitDisplay'),
                 loanRemainLimitDisplay: document.getElementById('loanRemainLimitDisplay'),
-                btnBorrow10Pct: document.getElementById('btnBorrow10Pct'),
-                btnBorrow50Pct: document.getElementById('btnBorrow50Pct'),
-                btnBorrowMax: document.getElementById('btnBorrowMax'),
-                btnRepay10Pct: document.getElementById('btnRepay10Pct'),
-                btnRepay50Pct: document.getElementById('btnRepay50Pct'),
-                btnRepayMax: document.getElementById('btnRepayMax'),
+                btnBorrowDec: document.getElementById('btnBorrowDec'),
+                btnBorrowInc: document.getElementById('btnBorrowInc'),
+                borrowPctText: document.getElementById('borrowPctText'),
+                borrowPctValText: document.getElementById('borrowPctValText'),
+                btnBorrowAction: document.getElementById('btnBorrowAction'),
+
+                btnRepayDec: document.getElementById('btnRepayDec'),
+                btnRepayInc: document.getElementById('btnRepayInc'),
+                repayPctText: document.getElementById('repayPctText'),
+                repayPctValText: document.getElementById('repayPctValText'),
+                btnRepayAction: document.getElementById('btnRepayAction'),
+
                 loanRankListContainer: document.getElementById('loanRankListContainer'),
 
                 borrowConfirmModal: document.getElementById('borrowConfirmModal'),
@@ -838,8 +870,13 @@
         }
 
         function getTotalAsset() {
-            const stockVal = gameState.stocks.reduce((acc, stock) => acc + (stock.price * stock.owned), 0);
-            const realEstateVal = gameState.realEstate.reduce((acc, re) => acc + (re.cost * re.owned), 0);
+            let stockVal = 0;
+            gameState.stocks.forEach(stock => {
+                if (stock.owned > 0) {
+                    stockVal += Math.floor(stock.price * stock.owned);
+                }
+            });
+            const realEstateVal = gameState.realEstate.reduce((acc, re) => acc + Math.floor(re.cost * re.owned), 0);
             return gameState.cash + stockVal + realEstateVal - (gameState.borrowedAmount || 0);
         }
 
@@ -872,12 +909,12 @@
                     icon.className = "fas fa-user-tie text-emerald-600 text-lg";
                     text.textContent = "수석 펀드매니저 열일 중...";
                     text.className = "text-[10px] font-bold text-emerald-800";
-                    els.workerAvatarArea.className = "mb-2 bg-emerald-50 rounded-2xl p-2 border border-emerald-200 flex items-center justify-center space-x-2 animate-pulse";
+                    els.workerAvatarArea.className = "mb-2 bg-emerald-50 rounded-2xl p-2 border border-emerald-200 flex items-center justify-center space-x-2 animate-pulse flex-shrink-0";
                 } else {
                     icon.className = "fas fa-robot text-purple-500 text-lg";
                     text.textContent = "오토 봇 열일 중...";
                     text.className = "text-[10px] font-bold text-purple-700";
-                    els.workerAvatarArea.className = "mb-2 bg-purple-50 rounded-2xl p-2 border border-purple-100 flex items-center justify-center space-x-2 animate-bounce";
+                    els.workerAvatarArea.className = "mb-2 bg-purple-50 rounded-2xl p-2 border border-purple-100 flex items-center justify-center space-x-2 animate-bounce flex-shrink-0";
                 }
             }
         }
@@ -964,21 +1001,16 @@
             if (els.loanInterestDisplay) els.loanInterestDisplay.textContent = `${interestPct}%`;
             if (els.loanRemainLimitDisplay) els.loanRemainLimitDisplay.textContent = formatCurrency(remain);
 
-            // Dynamic Borrow Button Texts
-            const borrow10Val = Math.floor(remain * 0.1);
-            const borrow50Val = Math.floor(remain * 0.5);
-            if (els.btnBorrow10Pct) els.btnBorrow10Pct.textContent = `10% 대출 (+${formatCurrency(borrow10Val)})`;
-            if (els.btnBorrow50Pct) els.btnBorrow50Pct.textContent = `50% 대출 (+${formatCurrency(borrow50Val)})`;
-            if (els.btnBorrowMax) els.btnBorrowMax.textContent = `한도 채워서 대출 (100%)`;
+            const borrowAmount = Math.floor(remain * (borrowRatio / 100));
+            if (els.borrowPctText) els.borrowPctText.textContent = `${borrowRatio}%`;
+            if (els.borrowPctValText) els.borrowPctValText.textContent = formatCurrency(borrowAmount);
+            if (els.btnBorrowAction) els.btnBorrowAction.textContent = `대출 받기 (+${formatCurrency(borrowAmount)})`;
 
-            // Dynamic Repay Button Texts
-            const repay10Val = Math.floor(borrowed * 0.1);
-            const repay50Val = Math.floor(borrowed * 0.5);
-            if (els.btnRepay10Pct) els.btnRepay10Pct.textContent = `10% 상환 (-${formatCurrency(repay10Val)})`;
-            if (els.btnRepay50Pct) els.btnRepay50Pct.textContent = `50% 상환 (-${formatCurrency(repay50Val)})`;
-            if (els.btnRepayMax) els.btnRepayMax.textContent = `전액 상환 (100% / -${formatCurrency(borrowed)})`;
+            const repayAmount = Math.floor(borrowed * (repayRatio / 100));
+            if (els.repayPctText) els.repayPctText.textContent = `${repayRatio}%`;
+            if (els.repayPctValText) els.repayPctValText.textContent = formatCurrency(repayAmount);
+            if (els.btnRepayAction) els.btnRepayAction.textContent = `대출 상환 (-${formatCurrency(repayAmount)})`;
 
-            // Render rank loan benefits guide
             if (els.loanRankListContainer) {
                 els.loanRankListContainer.innerHTML = '';
                 const total = getTotalAsset();
@@ -1027,8 +1059,10 @@
             let currentStockValue = 0;
             let investedStockValue = 0;
             gameState.stocks.forEach(s => {
-                currentStockValue += s.price * s.owned;
-                investedStockValue += s.avgPrice * s.owned;
+                if (s.owned > 0) {
+                    currentStockValue += Math.floor(s.price * s.owned);
+                    investedStockValue += Math.floor(s.avgPrice * s.owned);
+                }
             });
 
             if (els.profitRate) {
@@ -1041,8 +1075,7 @@
                     els.profitRate.className = profitPct >= 0 ? 'text-[10px] font-bold text-red-400' : 'text-[10px] font-bold text-blue-400';
                     
                     if (els.profitAmount) {
-                        const amountSign = profitDiff > 0 ? '+' : (profitDiff < 0 ? '-' : '');
-                        els.profitAmount.textContent = `${amountSign}${formatCurrency(Math.abs(profitDiff))}`;
+                        els.profitAmount.textContent = formatCurrency(profitDiff);
                         els.profitAmount.className = profitDiff >= 0 ? 'text-[9px] font-bold text-red-400/80' : 'text-[9px] font-bold text-blue-400/80';
                     }
                 } else {
@@ -1161,7 +1194,6 @@
             let dividendTotal = 0;
             const stockBuff = getSkillEffect('stockBuff');
 
-            // 1. Process Stock Price Updates
             gameState.stocks.forEach(stock => {
                 if (stock.type === 'leverage' || stock.type === 'inverse') return;
 
@@ -1201,7 +1233,6 @@
                 }
             });
 
-            // Leverage and Inverse 3X sync
             const baseStock = gameState.stocks.find(s => s.id === 'stk_01');
             if (baseStock && baseStock.history.length > 0) {
                 const prevBase = baseStock.history[baseStock.history.length - 1];
@@ -1222,13 +1253,12 @@
                 }
             }
 
-            // 2. Process Loan Interest Deduction (마이너스 통장 연동)
             if (gameState.borrowedAmount > 0) {
                 const rank = getCurrentRankObj();
                 const interestAmount = Math.floor(gameState.borrowedAmount * rank.loanInterest);
                 if (interestAmount > 0) {
                     gameState.cash -= interestAmount;
-                    showLoanToast(`💸 대출 이자 발생: -${formatCurrency(interestAmount)} 차감!`);
+                    showLoanToast(`💸 대출 이자 발생: ${formatCurrency(-interestAmount)} 차감!`);
                 }
             }
 
@@ -1326,7 +1356,7 @@
             document.body.appendChild(toast);
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'scale-90');
-                setTimeout(() => { if (document.body.contains(toast)) document.body.removeChild(toast); }, 3500);
+                setTimeout(() => { if (document.body.contains(toast)) document.body.removeChild(toast); }, 300);
             }, 3500);
         }
 
@@ -1384,7 +1414,6 @@
             if (repayAmount > 0) {
                 audio.playBuy();
                 gameState.borrowedAmount = Math.max(0, currentBorrowed - repayAmount);
-                // 보유 현금에서 전액 차감하여 이자로 인한 차액만큼 현금도 마이너스로 완벽 연동
                 gameState.cash -= repayAmount; 
                 updateDisplays();
                 showLoanToast(`💸 대출금 ${formatCurrency(repayAmount)} 상환 완료!`);
@@ -1550,26 +1579,24 @@
             const gain = calculatePrestigeGain();
             if (gain <= 0) return;
             
-            if(confirm(`정말로 환생하시겠습니까?\n모든 현금, 업그레이드, 대출금, 주식, 부동산이 초기화되며 영구 카르마 ${gain}개를 얻습니다.`)) {
-                audio.init(); audio.playPrestige();
-                
-                const savedKarma = gameState.karma + gain;
-                const savedSkills = JSON.parse(JSON.stringify(gameState.skills));
-                const savedNick = gameState.nickname;
-                const savedId = gameState.userId;
-                const savedAudio = { bgm: audio.bgmVolume, sfx: audio.sfxVolume };
-                
-                gameState = getInitialGameState();
-                gameState.karma = savedKarma;
-                gameState.skills = savedSkills;
-                gameState.nickname = savedNick;
-                gameState.userId = savedId;
-                audio.bgmVolume = savedAudio.bgm; audio.sfxVolume = savedAudio.sfx;
-                
-                saveGame();
-                alert(`✨ 성공적으로 환생했습니다!\n카르마 다이아몬드 ${gain}개를 획득했습니다.`);
-                location.reload(); 
-            }
+            audio.init(); audio.playPrestige();
+            
+            const savedKarma = gameState.karma + gain;
+            const savedSkills = JSON.parse(JSON.stringify(gameState.skills));
+            const savedNick = gameState.nickname;
+            const savedId = gameState.userId;
+            const savedAudio = { bgm: audio.bgmVolume, sfx: audio.sfxVolume };
+            
+            gameState = getInitialGameState();
+            gameState.karma = savedKarma;
+            gameState.skills = savedSkills;
+            gameState.nickname = savedNick;
+            gameState.userId = savedId;
+            audio.bgmVolume = savedAudio.bgm; audio.sfxVolume = savedAudio.sfx;
+            
+            saveGame();
+            showNewsToast(`✨ 환생 성공! 카르마 다이아몬드 +${gain}개 획득!`, true);
+            setTimeout(() => location.reload(), 1500);
         }
 
         function updateChart() {
@@ -1899,17 +1926,48 @@
             if (els.btnUpgFeverGauge) els.btnUpgFeverGauge.addEventListener('click', () => { audio.init(); const cost = getUpgCost(gameState.feverGaugeUpg); if (gameState.cash >= cost) { audio.playBuy(); gameState.cash -= cost; gameState.feverGaugeUpg.level++; updateDisplays(); } else audio.playError(); });
             if (els.btnUpgFeverMulti) els.btnUpgFeverMulti.addEventListener('click', () => { audio.init(); const cost = getUpgCost(gameState.feverMultiUpg); if (gameState.cash >= cost) { audio.playBuy(); gameState.cash -= cost; gameState.feverMultiUpg.level++; updateDisplays(); } else audio.playError(); });
 
-            // Percentage Loan Listeners
-            if (els.btnBorrow10Pct) els.btnBorrow10Pct.addEventListener('click', () => requestBorrowModal(0.1));
-            if (els.btnBorrow50Pct) els.btnBorrow50Pct.addEventListener('click', () => requestBorrowModal(0.5));
-            if (els.btnBorrowMax) els.btnBorrowMax.addEventListener('click', () => requestBorrowModal(1.0));
+            if (els.btnBorrowDec) {
+                els.btnBorrowDec.addEventListener('click', () => {
+                    audio.init(); audio.playClick();
+                    borrowRatio = Math.max(10, borrowRatio - 10);
+                    updateLoanUI();
+                });
+            }
+            if (els.btnBorrowInc) {
+                els.btnBorrowInc.addEventListener('click', () => {
+                    audio.init(); audio.playClick();
+                    borrowRatio = Math.min(100, borrowRatio + 10);
+                    updateLoanUI();
+                });
+            }
+            if (els.btnBorrowAction) {
+                els.btnBorrowAction.addEventListener('click', () => {
+                    requestBorrowModal(borrowRatio / 100);
+                });
+            }
+
+            if (els.btnRepayDec) {
+                els.btnRepayDec.addEventListener('click', () => {
+                    audio.init(); audio.playClick();
+                    repayRatio = Math.max(10, repayRatio - 10);
+                    updateLoanUI();
+                });
+            }
+            if (els.btnRepayInc) {
+                els.btnRepayInc.addEventListener('click', () => {
+                    audio.init(); audio.playClick();
+                    repayRatio = Math.min(100, repayRatio + 10);
+                    updateLoanUI();
+                });
+            }
+            if (els.btnRepayAction) {
+                els.btnRepayAction.addEventListener('click', () => {
+                    repayLoanRatio(repayRatio / 100);
+                });
+            }
 
             if (els.btnCancelBorrow) els.btnCancelBorrow.addEventListener('click', () => { audio.playClick(); if (els.borrowConfirmModal) els.borrowConfirmModal.classList.add('hidden'); pendingBorrowAmount = 0; });
             if (els.btnConfirmBorrow) els.btnConfirmBorrow.addEventListener('click', executeBorrow);
-
-            if (els.btnRepay10Pct) els.btnRepay10Pct.addEventListener('click', () => repayLoanRatio(0.1));
-            if (els.btnRepay50Pct) els.btnRepay50Pct.addEventListener('click', () => repayLoanRatio(0.5));
-            if (els.btnRepayMax) els.btnRepayMax.addEventListener('click', () => repayLoanRatio(1.0));
 
             if (els.btnOpenSettings) els.btnOpenSettings.addEventListener('click', () => { audio.init(); audio.playClick(); if (els.settingsModal) els.settingsModal.classList.remove('hidden'); });
             if (els.closeSettingsBtn) els.closeSettingsBtn.addEventListener('click', () => { audio.playClick(); if (els.settingsModal) els.settingsModal.classList.add('hidden'); });
@@ -1927,7 +1985,6 @@
 
             if (els.btnSaveNickname) els.btnSaveNickname.addEventListener('click', () => { audio.init(); const val = els.settingNicknameInput.value.trim(); if (val) { audio.playBuy(); gameState.nickname = val; syncUserToFirebase(); saveGame(); showNewsToast("닉네임이 변경되었습니다.", true); }});
             
-            // Reset Confirmation Modal Handlers
             if (els.btnResetGame) els.btnResetGame.addEventListener('click', () => { audio.init(); audio.playClick(); if (els.resetConfirmModal) els.resetConfirmModal.classList.remove('hidden'); });
             if (els.btnCancelReset) els.btnCancelReset.addEventListener('click', () => { audio.playClick(); if (els.resetConfirmModal) els.resetConfirmModal.classList.add('hidden'); });
             if (els.btnConfirmReset) els.btnConfirmReset.addEventListener('click', () => {
