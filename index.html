@@ -356,6 +356,7 @@
                 <p class="text-xs text-slate-400 mt-0.5" id="txt_loanSubHeader">Borrow cash when needed. (Interest every 30s)</p>
             </div>
 
+            <!-- Current Loan Summary Card -->
             <div class="bg-gradient-to-br from-indigo-950 to-slate-900 rounded-2xl p-4 text-white shadow-md border border-indigo-700/60 space-y-3 flex-shrink-0">
                 <div class="flex justify-between items-center border-b border-indigo-800/80 pb-2">
                     <span class="text-xs font-bold text-indigo-300" id="txt_loanPrincipalLabel">Active Loan Principal</span>
@@ -373,9 +374,14 @@
                 </div>
                 <div class="bg-indigo-950/80 rounded-xl p-2 text-[10px] text-indigo-200 border border-indigo-800/80 flex justify-between items-center">
                     <span id="txt_loanAvailLabel">Available Credit:</span>
-                    <div class="text-right">
-                        <span id="loanNextInterestTimer" class="bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded mr-1">Next: 30s</span>
-                        <span id="loanRemainLimitDisplay" class="font-black text-white">$1,000,000</span>
+                    <span id="loanRemainLimitDisplay" class="font-black text-white">$1,000,000</span>
+                </div>
+                <!-- 30s Exact Interest Due Box with Countdown Timer -->
+                <div class="bg-indigo-950/80 rounded-xl p-2 text-[10px] text-indigo-200 border border-indigo-800/80 flex justify-between items-center">
+                    <span id="txt_loanExactInterestLabel">30s Interest Due:</span>
+                    <div class="text-right flex items-center justify-end space-x-1.5">
+                        <span id="loanNextInterestTimer" class="bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded text-[9px] font-bold">Next: 30s</span>
+                        <span id="loanExactInterestDisplay" class="font-black text-amber-400">$0</span>
                     </div>
                 </div>
             </div>
@@ -458,6 +464,7 @@
         </div>
     </main>
 
+    <!-- Bottom Navigation Bar -->
     <nav class="flex-shrink-0 bg-slate-950/95 border-t border-slate-800 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] pb-safe relative">
         <div class="flex">
             <button class="nav-btn flex-1 py-2 flex flex-col items-center justify-center transition-colors text-amber-400 font-bold bg-amber-500/10" data-target="tab-work">
@@ -487,6 +494,7 @@
         </div>
     </nav>
 
+    <!-- Onboarding Tutorial Overlay -->
     <div id="tutorialOverlay" class="fixed inset-0 z-[100] pointer-events-none hidden">
         <div id="tutorialBox" class="absolute pointer-events-auto bg-amber-400 text-slate-950 px-4 py-3 rounded-2xl shadow-2xl font-black text-xs flex flex-col items-center space-y-1.5 animate-bounce-slow border-2 border-yellow-200 w-56 text-center transition-all duration-300">
             <i id="tutorialArrow" class="fas fa-arrow-down text-lg text-slate-900"></i>
@@ -498,6 +506,7 @@
         </div>
     </div>
 
+    <!-- Modals -->
     <!-- Borrow Confirm Modal -->
     <div id="borrowConfirmModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-slate-800 w-full max-w-xs rounded-3xl p-5 text-center space-y-4 shadow-2xl border border-slate-700">
@@ -682,11 +691,12 @@
         let els = {};
         let stockChartInstance = null;
         let currentBgUrl = '';
+        let isResetting = false;
 
-        // FIREBASE REST API (백그라운드 WebChannel 통신 경고 차단용)
+        // FIREBASE REST API BASE
         const FIREBASE_REST_BASE = "https://firestore.googleapis.com/v1/projects/stock-tycoon-fca67/databases/(default)/documents";
 
-        // Particle Engine
+        // Particle Canvas Logic
         const particleCanvas = document.getElementById('particleCanvas');
         const pCtx = particleCanvas.getContext('2d');
         let particles = [];
@@ -773,7 +783,7 @@
         }
         animateParticles();
 
-        // Localization Dictionary
+        // Localization i18n
         const i18n = {
             en: {
                 appTitle: "Stock Tycoon",
@@ -810,6 +820,7 @@
                 loanLimitLabel: "Credit Limit",
                 loanInterestLabel: "Interest / 30s",
                 loanAvailLabel: "Available Credit:",
+                loanExactInterestLabel: "30s Interest Due:",
                 borrowBoxTitle: "Borrow Cash",
                 borrowBoxDesc: "Set borrow ratio",
                 borrowBtnAction: "Borrow",
@@ -871,7 +882,9 @@
                 sharesUnit: "Sh",
                 sharesUnitFull: "Shares",
                 unowned: "0 Owned",
-                profitLabel: "Profit"
+                profitLabel: "Profit",
+                myEquityLabel: "My Net Equity (Excl. Loan)",
+                reqEquityLabel: "Req. Equity"
             },
             ko: {
                 appTitle: "주식 노가다 타이쿤",
@@ -908,6 +921,7 @@
                 loanLimitLabel: "내 칭호 대출 한도",
                 loanInterestLabel: "30초당 이자율",
                 loanAvailLabel: "추가 대출 가능 한도:",
+                loanExactInterestLabel: "30초당 이자 금액:",
                 borrowBoxTitle: "대출 받기",
                 borrowBoxDesc: "남은 한도 기준 대출 비율 설정",
                 borrowBtnAction: "대출 받기",
@@ -969,7 +983,9 @@
                 sharesUnit: "주",
                 sharesUnitFull: "주",
                 unowned: "미보유",
-                profitLabel: "수익률"
+                profitLabel: "수익률",
+                myEquityLabel: "내 순자산 (대출 원금 제외)",
+                reqEquityLabel: "필요 순자산"
             }
         };
 
@@ -981,6 +997,126 @@
         function setElementText(id, text) {
             const el = document.getElementById(id);
             if (el) el.textContent = text;
+        }
+
+        function initDOMElements() {
+            els = {
+                appBody: document.getElementById('appBody'),
+                bgLayer: document.getElementById('bgLayer'),
+                cash: document.getElementById('cashDisplay'),
+                stockAccountDisplay: document.getElementById('stockAccountDisplay'),
+                totalProfitRateDisplay: document.getElementById('totalProfitRateDisplay'),
+                asset: document.getElementById('totalAssetDisplay'),
+                prestigeCurrencyHeader: document.getElementById('prestigeCurrencyHeader'),
+                karmaDisplay: document.getElementById('karmaDisplay'),
+                newsTagBadge: document.getElementById('newsTagBadge'),
+                newsTicker: document.getElementById('newsTicker'),
+                feverBar: document.getElementById('feverBar'),
+                feverText: document.getElementById('feverText'),
+                workBtn: document.getElementById('workBtn'),
+                workBtnIcon: document.getElementById('workBtnIcon'),
+                workBtnText: document.getElementById('workBtnText'),
+                btnWatchAdStock: document.getElementById('btnWatchAdStock'),
+                autoPowerDisplay: document.getElementById('autoPowerDisplay'),
+                realEstatePowerDisplay: document.getElementById('realEstatePowerDisplay'),
+                clickPowerDisplay: document.getElementById('clickPowerDisplay'),
+                upgClickLv: document.getElementById('upgClickLv'),
+                upgClickCurrent: document.getElementById('upgClickCurrent'),
+                upgClickNext: document.getElementById('upgClickNext'),
+                upgClickCost: document.getElementById('upgClickCost'),
+                btnUpgClick: document.getElementById('btnUpgClick'),
+                btnUpgClickMax: document.getElementById('btnUpgClickMax'),
+                upgAutoLv: document.getElementById('upgAutoLv'),
+                upgAutoCurrent: document.getElementById('upgAutoCurrent'),
+                upgAutoNext: document.getElementById('upgAutoNext'),
+                upgAutoCost: document.getElementById('upgAutoCost'),
+                btnUpgAuto: document.getElementById('btnUpgAuto'),
+                btnUpgAutoMax: document.getElementById('btnUpgAutoMax'),
+                upgFeverGaugeLv: document.getElementById('upgFeverGaugeLv'),
+                upgFeverGaugeCurrent: document.getElementById('upgFeverGaugeCurrent'),
+                upgFeverGaugeNext: document.getElementById('upgFeverGaugeNext'),
+                upgFeverGaugeCost: document.getElementById('upgFeverGaugeCost'),
+                btnUpgFeverGauge: document.getElementById('btnUpgFeverGauge'),
+                btnUpgFeverGaugeMax: document.getElementById('btnUpgFeverGaugeMax'),
+                upgFeverMultiLv: document.getElementById('upgFeverMultiLv'),
+                upgFeverMultiCurrent: document.getElementById('upgFeverMultiCurrent'),
+                upgFeverMultiNext: document.getElementById('upgFeverMultiNext'),
+                upgFeverMultiCost: document.getElementById('upgFeverMultiCost'),
+                btnUpgFeverMulti: document.getElementById('btnUpgFeverMulti'),
+                btnUpgFeverMultiMax: document.getElementById('btnUpgFeverMultiMax'),
+                marketTimer: document.getElementById('marketUpdateTimer'),
+                stockList: document.getElementById('stockList'),
+                flexList: document.getElementById('flexList'),
+                loanBorrowedDisplay: document.getElementById('loanBorrowedDisplay'),
+                loanLimitDisplay: document.getElementById('loanLimitDisplay'),
+                loanInterestDisplay: document.getElementById('loanInterestDisplay'),
+                loanRemainLimitDisplay: document.getElementById('loanRemainLimitDisplay'),
+                loanNextInterestTimer: document.getElementById('loanNextInterestTimer'),
+                loanExactInterestDisplay: document.getElementById('loanExactInterestDisplay'),
+                btnBorrowDec: document.getElementById('btnBorrowDec'),
+                btnBorrowInc: document.getElementById('btnBorrowInc'),
+                borrowPctText: document.getElementById('borrowPctText'),
+                borrowPctValText: document.getElementById('borrowPctValText'),
+                btnBorrowAction: document.getElementById('btnBorrowAction'),
+                btnRepayDec: document.getElementById('btnRepayDec'),
+                btnRepayInc: document.getElementById('btnRepayInc'),
+                repayPctText: document.getElementById('repayPctText'),
+                repayPctValText: document.getElementById('repayPctValText'),
+                btnRepayAction: document.getElementById('btnRepayAction'),
+                loanRankListContainer: document.getElementById('loanRankListContainer'),
+                prestigeGainEstimate: document.getElementById('prestigeGainEstimate'),
+                btnDoPrestige: document.getElementById('btnDoPrestige'),
+                skillListContainer: document.getElementById('skillListContainer'),
+                borrowConfirmModal: document.getElementById('borrowConfirmModal'),
+                borrowModalAmount: document.getElementById('borrowModalAmount'),
+                borrowModalInterest: document.getElementById('borrowModalInterest'),
+                btnCancelBorrow: document.getElementById('btnCancelBorrow'),
+                btnConfirmBorrow: document.getElementById('btnConfirmBorrow'),
+                settingsModal: document.getElementById('settingsModal'),
+                btnOpenSettings: document.getElementById('btnOpenSettings'),
+                closeSettingsBtn: document.getElementById('closeSettingsBtn'),
+                btnToggleLang: document.getElementById('btnToggleLang'),
+                bgmSlider: document.getElementById('bgmSlider'),
+                bgmVolText: document.getElementById('bgmVolText'),
+                sfxSlider: document.getElementById('sfxSlider'),
+                sfxVolText: document.getElementById('sfxVolText'),
+                settingNicknameInput: document.getElementById('settingNicknameInput'),
+                btnSaveNickname: document.getElementById('btnSaveNickname'),
+                btnResetGame: document.getElementById('btnResetGame'),
+                resetConfirmModal: document.getElementById('resetConfirmModal'),
+                btnCancelReset: document.getElementById('btnCancelReset'),
+                btnConfirmReset: document.getElementById('btnConfirmReset'),
+                tradeModal: document.getElementById('tradeModal'),
+                tradeModalContent: document.getElementById('tradeModalContent'),
+                closeModalBtn: document.getElementById('closeModalBtn'),
+                modalStockName: document.getElementById('modalStockName'),
+                modalStockBadge: document.getElementById('modalStockBadge'),
+                modalStockPrice: document.getElementById('modalStockPrice'),
+                modalStockOwned: document.getElementById('modalStockOwned'),
+                modalStockAvg: document.getElementById('modalStockAvg'),
+                modalStockProfitRate: document.getElementById('modalStockProfitRate'),
+                buyBtn: document.getElementById('buyBtn'),
+                sellBtn: document.getElementById('sellBtn'),
+                buyCost: document.getElementById('buyCost'),
+                sellRevenue: document.getElementById('sellRevenue'),
+                buyMaxBtn: document.getElementById('buyMaxBtn'),
+                sellMaxBtn: document.getElementById('sellMaxBtn'),
+                modalMessage: document.getElementById('modalMessage'),
+                rankModal: document.getElementById('rankModal'),
+                btnOpenRankModal: document.getElementById('btnOpenRankModal'),
+                closeRankModalBtn: document.getElementById('closeRankModalBtn'),
+                rankDisplay: document.getElementById('rankDisplay'),
+                rankListContainer: document.getElementById('rankListContainer'),
+                leaderboardModal: document.getElementById('leaderboardModal'),
+                btnOpenLeaderboard: document.getElementById('btnOpenLeaderboard'),
+                closeLeaderboardBtn: document.getElementById('closeLeaderboardBtn'),
+                leaderboardList: document.getElementById('leaderboardList'),
+                nicknameModal: document.getElementById('nicknameModal'),
+                nicknameInput: document.getElementById('nicknameInput'),
+                btnSubmitNickname: document.getElementById('btnSubmitNickname'),
+                btnNextTutorial: document.getElementById('btnNextTutorial'),
+                btnSkipTutorial: document.getElementById('btnSkipTutorial')
+            };
         }
 
         class AudioManager {
@@ -1129,126 +1265,6 @@
             { min: 10000000000000, title: { en: '🌌 Galactic Tycoon', ko: '🌌 지구 최고 재벌' }, clickBuff: 10.0, reBuff: 2.5, bgUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=80', loanLimit: 500000000000000, loanInterest: 0.01 }
         ];
 
-        function initDOMElements() {
-            els = {
-                appBody: document.getElementById('appBody'),
-                bgLayer: document.getElementById('bgLayer'),
-                cash: document.getElementById('cashDisplay'),
-                stockAccountDisplay: document.getElementById('stockAccountDisplay'),
-                totalProfitRateDisplay: document.getElementById('totalProfitRateDisplay'),
-                asset: document.getElementById('totalAssetDisplay'),
-                prestigeCurrencyHeader: document.getElementById('prestigeCurrencyHeader'),
-                karmaDisplay: document.getElementById('karmaDisplay'),
-                newsTagBadge: document.getElementById('newsTagBadge'),
-                newsTicker: document.getElementById('newsTicker'),
-                feverBar: document.getElementById('feverBar'),
-                feverText: document.getElementById('feverText'),
-                workBtn: document.getElementById('workBtn'),
-                workBtnIcon: document.getElementById('workBtnIcon'),
-                workBtnText: document.getElementById('workBtnText'),
-                btnWatchAdStock: document.getElementById('btnWatchAdStock'),
-                autoPowerDisplay: document.getElementById('autoPowerDisplay'),
-                realEstatePowerDisplay: document.getElementById('realEstatePowerDisplay'),
-                clickPowerDisplay: document.getElementById('clickPowerDisplay'),
-                upgClickLv: document.getElementById('upgClickLv'),
-                upgClickCurrent: document.getElementById('upgClickCurrent'),
-                upgClickNext: document.getElementById('upgClickNext'),
-                upgClickCost: document.getElementById('upgClickCost'),
-                btnUpgClick: document.getElementById('btnUpgClick'),
-                btnUpgClickMax: document.getElementById('btnUpgClickMax'),
-                upgAutoLv: document.getElementById('upgAutoLv'),
-                upgAutoCurrent: document.getElementById('upgAutoCurrent'),
-                upgAutoNext: document.getElementById('upgAutoNext'),
-                upgAutoCost: document.getElementById('upgAutoCost'),
-                btnUpgAuto: document.getElementById('btnUpgAuto'),
-                btnUpgAutoMax: document.getElementById('btnUpgAutoMax'),
-                upgFeverGaugeLv: document.getElementById('upgFeverGaugeLv'),
-                upgFeverGaugeCurrent: document.getElementById('upgFeverGaugeCurrent'),
-                upgFeverGaugeNext: document.getElementById('upgFeverGaugeNext'),
-                upgFeverGaugeCost: document.getElementById('upgFeverGaugeCost'),
-                btnUpgFeverGauge: document.getElementById('btnUpgFeverGauge'),
-                btnUpgFeverGaugeMax: document.getElementById('btnUpgFeverGaugeMax'),
-                upgFeverMultiLv: document.getElementById('upgFeverMultiLv'),
-                upgFeverMultiCurrent: document.getElementById('upgFeverMultiCurrent'),
-                upgFeverMultiNext: document.getElementById('upgFeverMultiNext'),
-                upgFeverMultiCost: document.getElementById('upgFeverMultiCost'),
-                btnUpgFeverMulti: document.getElementById('btnUpgFeverMulti'),
-                btnUpgFeverMultiMax: document.getElementById('btnUpgFeverMultiMax'),
-                marketTimer: document.getElementById('marketUpdateTimer'),
-                stockList: document.getElementById('stockList'),
-                flexList: document.getElementById('flexList'),
-                loanBorrowedDisplay: document.getElementById('loanBorrowedDisplay'),
-                loanLimitDisplay: document.getElementById('loanLimitDisplay'),
-                loanInterestDisplay: document.getElementById('loanInterestDisplay'),
-                loanRemainLimitDisplay: document.getElementById('loanRemainLimitDisplay'),
-                loanNextInterestTimer: document.getElementById('loanNextInterestTimer'),
-                btnBorrowDec: document.getElementById('btnBorrowDec'),
-                btnBorrowInc: document.getElementById('btnBorrowInc'),
-                borrowPctText: document.getElementById('borrowPctText'),
-                borrowPctValText: document.getElementById('borrowPctValText'),
-                btnBorrowAction: document.getElementById('btnBorrowAction'),
-                btnRepayDec: document.getElementById('btnRepayDec'),
-                btnRepayInc: document.getElementById('btnRepayInc'),
-                repayPctText: document.getElementById('repayPctText'),
-                repayPctValText: document.getElementById('repayPctValText'),
-                btnRepayAction: document.getElementById('btnRepayAction'),
-                loanRankListContainer: document.getElementById('loanRankListContainer'),
-                prestigeGainEstimate: document.getElementById('prestigeGainEstimate'),
-                btnDoPrestige: document.getElementById('btnDoPrestige'),
-                skillListContainer: document.getElementById('skillListContainer'),
-                borrowConfirmModal: document.getElementById('borrowConfirmModal'),
-                borrowModalAmount: document.getElementById('borrowModalAmount'),
-                borrowModalInterest: document.getElementById('borrowModalInterest'),
-                btnCancelBorrow: document.getElementById('btnCancelBorrow'),
-                btnConfirmBorrow: document.getElementById('btnConfirmBorrow'),
-                settingsModal: document.getElementById('settingsModal'),
-                btnOpenSettings: document.getElementById('btnOpenSettings'),
-                closeSettingsBtn: document.getElementById('closeSettingsBtn'),
-                btnToggleLang: document.getElementById('btnToggleLang'),
-                bgmSlider: document.getElementById('bgmSlider'),
-                bgmVolText: document.getElementById('bgmVolText'),
-                sfxSlider: document.getElementById('sfxSlider'),
-                sfxVolText: document.getElementById('sfxVolText'),
-                settingNicknameInput: document.getElementById('settingNicknameInput'),
-                btnSaveNickname: document.getElementById('btnSaveNickname'),
-                btnResetGame: document.getElementById('btnResetGame'),
-                resetConfirmModal: document.getElementById('resetConfirmModal'),
-                btnCancelReset: document.getElementById('btnCancelReset'),
-                btnConfirmReset: document.getElementById('btnConfirmReset'),
-                tradeModal: document.getElementById('tradeModal'),
-                tradeModalContent: document.getElementById('tradeModalContent'),
-                closeModalBtn: document.getElementById('closeModalBtn'),
-                modalStockName: document.getElementById('modalStockName'),
-                modalStockBadge: document.getElementById('modalStockBadge'),
-                modalStockPrice: document.getElementById('modalStockPrice'),
-                modalStockOwned: document.getElementById('modalStockOwned'),
-                modalStockAvg: document.getElementById('modalStockAvg'),
-                modalStockProfitRate: document.getElementById('modalStockProfitRate'),
-                buyBtn: document.getElementById('buyBtn'),
-                sellBtn: document.getElementById('sellBtn'),
-                buyCost: document.getElementById('buyCost'),
-                sellRevenue: document.getElementById('sellRevenue'),
-                buyMaxBtn: document.getElementById('buyMaxBtn'),
-                sellMaxBtn: document.getElementById('sellMaxBtn'),
-                modalMessage: document.getElementById('modalMessage'),
-                rankModal: document.getElementById('rankModal'),
-                btnOpenRankModal: document.getElementById('btnOpenRankModal'),
-                closeRankModalBtn: document.getElementById('closeRankModalBtn'),
-                rankDisplay: document.getElementById('rankDisplay'),
-                rankListContainer: document.getElementById('rankListContainer'),
-                leaderboardModal: document.getElementById('leaderboardModal'),
-                btnOpenLeaderboard: document.getElementById('btnOpenLeaderboard'),
-                closeLeaderboardBtn: document.getElementById('closeLeaderboardBtn'),
-                leaderboardList: document.getElementById('leaderboardList'),
-                nicknameModal: document.getElementById('nicknameModal'),
-                nicknameInput: document.getElementById('nicknameInput'),
-                btnSubmitNickname: document.getElementById('btnSubmitNickname'),
-                btnNextTutorial: document.getElementById('btnNextTutorial'),
-                btnSkipTutorial: document.getElementById('btnSkipTutorial')
-            };
-        }
-
-        // CRAZYGAMES REWARDED AD WORKFLOW
         function watchAdForStockReward() {
             audio.init();
             
@@ -1278,7 +1294,7 @@
                             }
                         } catch(e){}
                         console.warn("CrazyGames Ad Error/Dismissed:", error);
-                        showNewsToast(gameState.lang === 'ko' ? "⚠️ 광고 시청이 완료되어야 보상이 지급됩니다." : "⚠️ Finish watching the ad to get the reward.", false);
+                        showNewsToast(gameState.lang === 'ko' ? "⚠️ 광고 시청이 완료되어야 보상이 지급됩니다." : "⚠️ Finish watching the ad to get the reward.", false, false);
                     }
                 });
             } else {
@@ -1296,23 +1312,56 @@
             updateDisplays();
             renderStockList();
             const stockName = typeof randomStock.name === 'object' ? randomStock.name[gameState.lang] : randomStock.name;
-            showNewsToast(`🎉 +1 ${stockName} Stock Granted!`, true);
+            showNewsToast(`🎉 +1 ${stockName} Stock Granted!`, true, false);
         }
 
+        // Large Number Abbreviation Formatter (>= 1 Billion / 10억)
         function formatCurrency(num) { 
-            const absVal = Math.abs(Math.floor(num)).toLocaleString('en-US');
-            return num < 0 ? `-$${absVal}` : `$${absVal}`; 
-        }
+            if (num === undefined || num === null || isNaN(num)) return '$0';
+            const isNeg = num < 0;
+            const absVal = Math.abs(Math.floor(num));
+            const lang = (gameState && gameState.lang) ? gameState.lang : 'en';
 
-        function getCurrentRankObj() {
-            const total = getTotalAsset();
-            let current = ranks[0];
-            for (let r of ranks) {
-                if (total >= r.min) current = r;
+            if (absVal < 1000000000) {
+                const formatted = absVal.toLocaleString('en-US');
+                return isNeg ? `-$${formatted}` : `$${formatted}`;
             }
-            return current;
+
+            let valStr = '';
+            const formatNumberWithUnit = (val, divisor, unit) => {
+                let numVal = (val / divisor).toFixed(2);
+                numVal = numVal.replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+                return numVal + unit;
+            };
+
+            if (lang === 'ko') {
+                if (absVal >= 1e16) {
+                    valStr = formatNumberWithUnit(absVal, 1e16, '경');
+                } else if (absVal >= 1e12) {
+                    valStr = formatNumberWithUnit(absVal, 1e12, '조');
+                } else {
+                    valStr = formatNumberWithUnit(absVal, 1e8, '억');
+                }
+            } else {
+                if (absVal >= 1e24) {
+                    valStr = formatNumberWithUnit(absVal, 1e24, 'Sp');
+                } else if (absVal >= 1e21) {
+                    valStr = formatNumberWithUnit(absVal, 1e21, 'Sx');
+                } else if (absVal >= 1e18) {
+                    valStr = formatNumberWithUnit(absVal, 1e18, 'Qi');
+                } else if (absVal >= 1e15) {
+                    valStr = formatNumberWithUnit(absVal, 1e15, 'Qa');
+                } else if (absVal >= 1e12) {
+                    valStr = formatNumberWithUnit(absVal, 1e12, 'T');
+                } else {
+                    valStr = formatNumberWithUnit(absVal, 1e9, 'B');
+                }
+            }
+
+            return isNeg ? `-$${valStr}` : `$${valStr}`;
         }
 
+        // Net Worth = Cash + Stock Portfolio + Real Estate
         function getTotalAsset() {
             let stockVal = 0;
             gameState.stocks.forEach(stock => {
@@ -1321,7 +1370,22 @@
                 }
             });
             const realEstateVal = gameState.realEstate.reduce((acc, re) => acc + Math.floor(re.cost * re.owned), 0);
-            return gameState.cash + stockVal + realEstateVal - (gameState.borrowedAmount || 0);
+            return gameState.cash + stockVal + realEstateVal;
+        }
+
+        // Net Equity = Net Worth - Borrowed Loan
+        function getEquity() {
+            return getTotalAsset() - (gameState.borrowedAmount || 0);
+        }
+
+        // Rank Unlock Check using Net Equity
+        function getCurrentRankObj() {
+            const equity = getEquity();
+            let current = ranks[0];
+            for (let r of ranks) {
+                if (equity >= r.min) current = r;
+            }
+            return current;
         }
 
         function calculatePrestigeGain() {
@@ -1408,6 +1472,7 @@
             setElementText('txt_loanLimitLabel', t('loanLimitLabel'));
             setElementText('txt_loanInterestLabel', t('loanInterestLabel'));
             setElementText('txt_loanAvailLabel', t('loanAvailLabel'));
+            setElementText('txt_loanExactInterestLabel', t('loanExactInterestLabel'));
             setElementText('txt_borrowBoxTitle', t('borrowBoxTitle'));
             setElementText('txt_borrowBoxDesc', t('borrowBoxDesc'));
             setElementText('btnBorrowAction', t('borrowBtnAction'));
@@ -1639,7 +1704,7 @@
 
             if (dividendTotal > 0) {
                 gameState.cash += dividendTotal;
-                showNewsToast(`${t('dividendToast')} +${formatCurrency(dividendTotal)}`, true);
+                showNewsToast(`${t('dividendToast')} +${formatCurrency(dividendTotal)}`, true, false);
             }
 
             if (els.newsTicker && !newsEvent) {
@@ -1692,17 +1757,21 @@
             }
 
             if (isGoodNews) audio.playNewsGood(); else audio.playNewsBad();
-            showNewsToast(fullText, isGoodNews);
+            showNewsToast(fullText, isGoodNews, true);
         }
 
-        function showNewsToast(msg, isGood) {
+        // News Toast Behavior: Stock breaking news navigates to stock tab; other toasts just dismiss on click
+        function showNewsToast(msg, isGood, isStockNews = false) {
             const toast = document.createElement('div');
             toast.className = `fixed top-20 left-0 right-0 mx-auto w-[85%] max-w-sm z-[100] px-3.5 py-2 rounded-2xl font-black text-xs text-white shadow-2xl transition-all duration-300 ${isGood ? 'bg-emerald-600 ring-4 ring-emerald-300/40' : 'bg-red-600 ring-4 ring-red-300/40'} animate-bounce flex items-center justify-center space-x-1.5 text-center break-keep cursor-pointer hover:scale-105 active:scale-95`;
-            toast.innerHTML = `<i class="fas ${isGood ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i><span>${msg}</span><span class="text-[9px] bg-black/30 px-1.5 py-0.5 rounded ml-1 font-normal">${t('toastMove')}</span>`;
+            const moveBtnHtml = isStockNews ? `<span class="text-[9px] bg-black/30 px-1.5 py-0.5 rounded ml-1 font-normal">${t('toastMove')}</span>` : '';
+            toast.innerHTML = `<i class="fas ${isGood ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i><span>${msg}</span>${moveBtnHtml}`;
             
             toast.addEventListener('click', () => {
-                const stockTabBtn = document.querySelector('.nav-btn[data-target="tab-stock"]');
-                if (stockTabBtn) stockTabBtn.click();
+                if (isStockNews) {
+                    const stockTabBtn = document.querySelector('.nav-btn[data-target="tab-stock"]');
+                    if (stockTabBtn) stockTabBtn.click();
+                }
                 if (document.body.contains(toast)) document.body.removeChild(toast);
             });
 
@@ -1950,11 +2019,13 @@
             const limit = rank.loanLimit;
             const interestPct = (rank.loanInterest * 100).toFixed(1);
             const remain = Math.max(0, limit - borrowed);
+            const exactInterest = Math.floor(borrowed * rank.loanInterest);
 
             if (els.loanBorrowedDisplay) els.loanBorrowedDisplay.textContent = formatCurrency(borrowed);
             if (els.loanLimitDisplay) els.loanLimitDisplay.textContent = formatCurrency(limit);
             if (els.loanInterestDisplay) els.loanInterestDisplay.textContent = `${interestPct}%`;
             if (els.loanRemainLimitDisplay) els.loanRemainLimitDisplay.textContent = formatCurrency(remain);
+            if (els.loanExactInterestDisplay) els.loanExactInterestDisplay.textContent = formatCurrency(exactInterest);
 
             const borrowAmount = Math.floor(remain * (borrowRatio / 100));
             if (els.borrowPctText) els.borrowPctText.textContent = `${borrowRatio}%`;
@@ -1968,9 +2039,9 @@
 
             if (els.loanRankListContainer) {
                 els.loanRankListContainer.innerHTML = '';
-                const total = getTotalAsset();
+                const equity = getEquity();
                 ranks.forEach(r => {
-                    const isCurrent = total >= r.min;
+                    const isCurrent = equity >= r.min;
                     const titleText = typeof r.title === 'object' ? r.title[gameState.lang] : r.title;
                     const div = document.createElement('div');
                     div.className = `p-2 rounded-xl text-[10px] flex justify-between items-center ${isCurrent ? 'bg-indigo-950/80 border border-indigo-700 text-indigo-200 font-bold' : 'bg-slate-900 text-slate-500 opacity-60'}`;
@@ -2231,17 +2302,25 @@
         function renderRankList() {
             if (!els.rankListContainer) return;
             els.rankListContainer.innerHTML = '';
-            const total = getTotalAsset();
+            const equity = getEquity();
+
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'bg-slate-900/90 p-3 rounded-2xl border border-amber-500/40 text-center mb-3 shadow-inner';
+            summaryDiv.innerHTML = `
+                <span class="text-[10px] font-bold text-slate-400 block">${t('myEquityLabel')}</span>
+                <span class="text-base font-black text-amber-300 block mt-0.5">${formatCurrency(equity)}</span>
+            `;
+            els.rankListContainer.appendChild(summaryDiv);
 
             ranks.forEach(r => {
-                const isUnlocked = total >= r.min;
+                const isUnlocked = equity >= r.min;
                 const titleText = typeof r.title === 'object' ? r.title[gameState.lang] : r.title;
                 const item = document.createElement('div');
                 item.className = `p-3 rounded-2xl border ${isUnlocked ? 'bg-emerald-950/60 border-emerald-500/50' : 'bg-slate-900 border-slate-800 opacity-60'}`;
                 item.innerHTML = `
                     <div class="flex justify-between items-center mb-1">
                         <span class="font-black text-xs ${isUnlocked ? 'text-emerald-300' : 'text-slate-400'}">${titleText} ${isUnlocked ? '✅' : '🔒'}</span>
-                        <span class="text-[9px] font-bold text-slate-400">Req: ${formatCurrency(r.min)}</span>
+                        <span class="text-[9px] font-bold text-slate-400">${t('reqEquityLabel')}: ${formatCurrency(r.min)}</span>
                     </div>
                     <div class="text-[10px] space-y-0.5">
                         <p class="${isUnlocked ? 'text-emerald-400' : 'text-slate-500'} font-bold">• Tap Boost: +${(r.clickBuff * 100).toFixed(0)}%</p>
@@ -2252,7 +2331,7 @@
             });
         }
 
-        // 경량화된 Firebase REST API 수신/발송 (웹채널 통신 에러 완전 차단)
+        // Firebase REST API
         async function syncUserToFirebase() {
             if (!gameState.nickname) return;
             try {
@@ -2298,7 +2377,7 @@
                 els.leaderboardList.innerHTML = '';
 
                 let rank = 1;
-                if (Array.isArray(data)) {
+                if (Array.isArray(data) && data.length > 0 && data[0].document) {
                     data.forEach((item) => {
                         if (!item.document) return;
                         const fields = item.document.fields;
@@ -2324,6 +2403,8 @@
                         els.leaderboardList.appendChild(div);
                         rank++;
                     });
+                } else {
+                    renderMockLeaderboard();
                 }
             } catch (e) { 
                 console.warn("Leaderboard REST error:", e);
@@ -2374,7 +2455,7 @@
             if (els.nicknameModal) els.nicknameModal.classList.add('hidden');
             syncUserToFirebase();
             saveGame();
-            showNewsToast(`Nickname Registered: ${trimmed}`, true);
+            showNewsToast(`Nickname Registered: ${trimmed}`, true, false);
             return true;
         }
 
@@ -2533,7 +2614,7 @@
                     gameState.borrowedAmount = Math.max(0, currentBorrowed - repayAmount);
                     gameState.cash -= repayAmount;
                     updateDisplays();
-                    showNewsToast(`${t('loanRepaidToast')} ${formatCurrency(repayAmount)}`, true);
+                    showNewsToast(`${t('loanRepaidToast')} ${formatCurrency(repayAmount)}`, true, false);
                 } else audio.playError();
             }); }
 
@@ -2547,7 +2628,7 @@
                     pendingBorrowAmount = 0;
                     if (els.borrowConfirmModal) els.borrowConfirmModal.classList.add('hidden');
                     updateDisplays();
-                    showNewsToast(t('loanCreditedToast'), true);
+                    showNewsToast(t('loanCreditedToast'), true, false);
                 } else audio.playError();
             });
 
@@ -2599,7 +2680,12 @@
 
             if (els.btnResetGame) els.btnResetGame.addEventListener('click', () => { audio.init(); audio.playClick(); if (els.resetConfirmModal) els.resetConfirmModal.classList.remove('hidden'); });
             if (els.btnCancelReset) els.btnCancelReset.addEventListener('click', () => { audio.playClick(); if (els.resetConfirmModal) els.resetConfirmModal.classList.add('hidden'); });
-            if (els.btnConfirmReset) els.btnConfirmReset.addEventListener('click', () => { audio.playClick(); localStorage.removeItem('stock_clicker_save'); location.reload(); });
+            if (els.btnConfirmReset) els.btnConfirmReset.addEventListener('click', () => {
+                audio.playClick();
+                isResetting = true;
+                localStorage.removeItem('stock_clicker_save');
+                location.reload();
+            });
             
             if (els.btnDoPrestige) els.btnDoPrestige.addEventListener('click', () => {
                 const gain = calculatePrestigeGain();
@@ -2612,6 +2698,7 @@
                     const savedId = gameState.userId;
                     const savedAudio = { bgm: audio.bgmVolume, sfx: audio.sfxVolume };
                     
+                    isResetting = true;
                     gameState = getInitialGameState();
                     gameState.karma = savedKarma;
                     gameState.skills = savedSkills;
@@ -2637,17 +2724,18 @@
             if (els.btnNextTutorial) els.btnNextTutorial.addEventListener('click', nextTutorialStep);
             if (els.btnSkipTutorial) els.btnSkipTutorial.addEventListener('click', skipTutorial);
 
-            // 탭 이탈 또는 창 닫을 때 안전하게 저장
             window.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden') {
+                if (document.visibilityState === 'hidden' && !isResetting) {
                     saveGame();
                 }
             });
-            window.addEventListener('beforeunload', saveGame);
+            window.addEventListener('beforeunload', () => {
+                if (!isResetting) saveGame();
+            });
         }
 
-        // 최적화된 저해상도 저장 함수 (터치 시 스팸 호출 제거)
         function saveGame() {
+            if (isResetting) return;
             try {
                 localStorage.setItem('stock_clicker_save', JSON.stringify({
                     cash: gameState.cash,
@@ -2731,7 +2819,6 @@
             if (els.bgmSlider) { els.bgmSlider.value = audio.bgmVolume * 100; if(els.bgmVolText) els.bgmVolText.textContent = `${els.bgmSlider.value}%`; }
             if (els.sfxSlider) { els.sfxSlider.value = audio.sfxVolume * 100; if(els.sfxVolText) els.sfxVolText.textContent = `${els.sfxSlider.value}%`; }
 
-            // 1초 단위 게임 루프
             setInterval(() => {
                 const totalAuto = gameState.autoPower + gameState.realEstatePower;
                 if (totalAuto > 0) { gameState.cash += totalAuto; updateDisplays(); }
@@ -2744,7 +2831,7 @@
                         const interestAmount = Math.floor(gameState.borrowedAmount * rank.loanInterest);
                         if (interestAmount > 0) {
                             gameState.cash -= interestAmount;
-                            showNewsToast(`${t('interestToast')} ${formatCurrency(-interestAmount)}`, false);
+                            showNewsToast(`${t('interestToast')} ${formatCurrency(-interestAmount)}`, false, false);
                             updateDisplays();
                         }
                     }
@@ -2754,7 +2841,6 @@
 
             }, 1000);
 
-            // 주가 변동 및 정기 저장 루프 (10초 주기)
             setInterval(() => {
                 gameState.updateTimer--;
                 if (gameState.updateTimer <= 0) { 
@@ -2766,7 +2852,7 @@
                     gameState.updateTimer = 10; 
                 }
                 if (els.marketTimer) els.marketTimer.textContent = `Next: ${gameState.updateTimer}s`;
-                saveGame(); // 주기적 안전 저장
+                saveGame();
             }, 1000);
 
             setInterval(syncUserToFirebase, 30000);
