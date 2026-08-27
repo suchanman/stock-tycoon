@@ -4,16 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Stock Clicker Tycoon - 주식 노가다 타이쿤</title>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
     <!-- Chart.js for Stock Price Graph -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
     <!-- Tone.js for Sound Effects & Synthesizer BGM -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js" crossorigin="anonymous"></script>
+    
     <!-- CrazyGames SDK v3 -->
-    <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+    <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js" crossorigin="anonymous"></script>
+    <script>
+        window.addEventListener("load", async function() {
+            try {
+                if (window.CrazyGames && window.CrazyGames.SDK) {
+                    await window.CrazyGames.SDK.init();
+                    console.log("CrazyGames SDK Initialized!");
+                    if (window.CrazyGames.SDK.game) {
+                        window.CrazyGames.SDK.game.gameplayStart();
+                    }
+                }
+            } catch (e) {
+                console.warn("CrazyGames SDK init bypass:", e);
+            }
+        });
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&family=Plus+Jakarta+Sans:wght@400;600;800;900&display=swap');
         
@@ -39,7 +56,6 @@
             transition: background 1s ease-in-out;
         }
 
-        /* Dynamic Background Image Layer */
         #bgLayer {
             position: fixed;
             inset: 0;
@@ -50,7 +66,6 @@
             filter: brightness(0.35) contrast(1.1);
         }
 
-        /* Particle Overlay Canvas */
         #particleCanvas {
             position: fixed;
             inset: 0;
@@ -58,7 +73,6 @@
             z-index: 50;
         }
 
-        /* Fever Mode Fire Effects */
         @keyframes feverPulse {
             0%, 100% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.8), inset 0 0 20px rgba(245, 158, 11, 0.6); }
             50% { box-shadow: 0 0 60px rgba(245, 158, 11, 1), inset 0 0 35px rgba(239, 68, 68, 0.9); }
@@ -81,7 +95,6 @@
             animation: feverShake 0.15s ease-in-out;
         }
 
-        /* Work Tab Rank Background Layer */
         #tab-work {
             background-size: cover;
             background-position: center;
@@ -144,13 +157,9 @@
 </head>
 <body class="flex flex-col h-full max-w-md mx-auto shadow-2xl relative overflow-hidden select-none" id="appBody">
 
-    <!-- Dynamic Background Image Layer -->
     <div id="bgLayer"></div>
-
-    <!-- Canvas for Floating Coin & Cash Particle Effects -->
     <canvas id="particleCanvas"></canvas>
 
-    <!-- Header Section (3-Column Asset Display) -->
     <header class="bg-slate-900/90 text-white p-3.5 shadow-xl z-20 flex-shrink-0 relative backdrop-blur-md border-b border-slate-700/80">
         <div class="flex justify-between items-center mb-1.5">
             <h1 class="text-lg font-black tracking-tight flex items-center space-x-1.5">
@@ -223,7 +232,6 @@
                 </button>
             </div>
 
-            <!-- Rewarded Ad Button for Free Random Stock -->
             <div class="w-full max-w-xs mx-auto flex-shrink-0 my-2">
                 <button id="btnWatchAdStock" class="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 active:scale-95 text-white font-black py-2.5 px-4 rounded-2xl shadow-lg border border-indigo-300/40 flex items-center justify-center space-x-2 transition-all cursor-pointer">
                     <i class="fas fa-tv text-yellow-300 text-sm animate-pulse"></i>
@@ -348,7 +356,6 @@
                 <p class="text-xs text-slate-400 mt-0.5" id="txt_loanSubHeader">Borrow cash when needed. (Interest every 30s)</p>
             </div>
 
-            <!-- Current Loan Summary Card -->
             <div class="bg-gradient-to-br from-indigo-950 to-slate-900 rounded-2xl p-4 text-white shadow-md border border-indigo-700/60 space-y-3 flex-shrink-0">
                 <div class="flex justify-between items-center border-b border-indigo-800/80 pb-2">
                     <span class="text-xs font-bold text-indigo-300" id="txt_loanPrincipalLabel">Active Loan Principal</span>
@@ -373,9 +380,7 @@
                 </div>
             </div>
 
-            <!-- Percentage Loan Action Steppers -->
             <div class="grid grid-cols-2 gap-3 flex-shrink-0">
-                <!-- Borrow Box -->
                 <div class="bg-slate-800/90 rounded-2xl p-3.5 shadow-sm border border-slate-700 flex flex-col justify-between">
                     <div>
                         <h3 class="font-bold text-white text-xs flex items-center"><i class="fas fa-hand-holding-dollar text-indigo-400 mr-1"></i><span id="txt_borrowBoxTitle">Borrow Cash</span></h3>
@@ -396,7 +401,6 @@
                     </div>
                 </div>
 
-                <!-- Repay Box -->
                 <div class="bg-slate-800/90 rounded-2xl p-3.5 shadow-sm border border-slate-700 flex flex-col justify-between">
                     <div>
                         <h3 class="font-bold text-white text-xs flex items-center"><i class="fas fa-piggy-bank text-emerald-400 mr-1"></i><span id="txt_repayBoxTitle">Repay Loan</span></h3>
@@ -418,7 +422,6 @@
                 </div>
             </div>
 
-            <!-- Rank Loan Benefits Guide List -->
             <div class="bg-slate-800/90 rounded-2xl p-3 shadow-sm border border-slate-700">
                 <h3 class="font-bold text-white text-xs mb-2 flex items-center"><i class="fas fa-list-check text-indigo-400 mr-1"></i><span id="txt_loanRankGuideTitle">Loan Limits & Rates by Rank</span></h3>
                 <div id="loanRankListContainer" class="space-y-1.5"></div>
@@ -455,7 +458,6 @@
         </div>
     </main>
 
-    <!-- Bottom Navigation Bar -->
     <nav class="flex-shrink-0 bg-slate-950/95 border-t border-slate-800 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] pb-safe relative">
         <div class="flex">
             <button class="nav-btn flex-1 py-2 flex flex-col items-center justify-center transition-colors text-amber-400 font-bold bg-amber-500/10" data-target="tab-work">
@@ -485,7 +487,6 @@
         </div>
     </nav>
 
-    <!-- Onboarding Visual Tutorial Overlay -->
     <div id="tutorialOverlay" class="fixed inset-0 z-[100] pointer-events-none hidden">
         <div id="tutorialBox" class="absolute pointer-events-auto bg-amber-400 text-slate-950 px-4 py-3 rounded-2xl shadow-2xl font-black text-xs flex flex-col items-center space-y-1.5 animate-bounce-slow border-2 border-yellow-200 w-56 text-center transition-all duration-300">
             <i id="tutorialArrow" class="fas fa-arrow-down text-lg text-slate-900"></i>
@@ -497,8 +498,7 @@
         </div>
     </div>
 
-    <!-- Modals Section -->
-    <!-- Borrow Confirmation Modal -->
+    <!-- Borrow Confirm Modal -->
     <div id="borrowConfirmModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-slate-800 w-full max-w-xs rounded-3xl p-5 text-center space-y-4 shadow-2xl border border-slate-700">
             <div class="w-14 h-14 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center text-2xl mx-auto border border-indigo-500/30"><i class="fas fa-hand-holding-dollar"></i></div>
@@ -568,7 +568,7 @@
         </div>
     </div>
 
-    <!-- Trade Modal with Chart -->
+    <!-- Trade Modal -->
     <div id="tradeModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-slate-800 w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0 max-h-[90vh] overflow-y-auto border border-slate-700" id="tradeModalContent">
             <div class="bg-slate-900 p-3.5 border-b border-slate-700 flex justify-between items-center">
@@ -658,7 +658,7 @@
         </div>
     </div>
 
-    <!-- Data Reset Confirmation Modal -->
+    <!-- Data Reset Modal -->
     <div id="resetConfirmModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-slate-800 w-full max-w-xs rounded-3xl p-5 text-center space-y-4 shadow-2xl border border-slate-700">
             <div class="w-14 h-14 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center text-2xl mx-auto border border-red-500/30"><i class="fas fa-triangle-exclamation"></i></div>
@@ -673,13 +673,7 @@
         </div>
     </div>
 
-    <!-- JavaScript Core Engine -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDocs, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Declare gameState at top
         let gameState = null;
         let pendingBorrowAmount = 0;
         let borrowRatio = 100;
@@ -688,9 +682,11 @@
         let els = {};
         let stockChartInstance = null;
         let currentBgUrl = '';
-        let db = null, auth = null, currentUser = null;
 
-        // --- 1. PARTICLE SYSTEM ENGINE ---
+        // FIREBASE REST API (백그라운드 WebChannel 통신 경고 차단용)
+        const FIREBASE_REST_BASE = "https://firestore.googleapis.com/v1/projects/stock-tycoon-fca67/databases/(default)/documents";
+
+        // Particle Engine
         const particleCanvas = document.getElementById('particleCanvas');
         const pCtx = particleCanvas.getContext('2d');
         let particles = [];
@@ -764,7 +760,6 @@
 
         function animateParticles() {
             pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
-            
             if (gameState && gameState.isFever && Math.random() < 0.4) {
                 particles.push(new FeverEmberParticle());
             }
@@ -778,7 +773,7 @@
         }
         animateParticles();
 
-        // --- 2. LOCALIZATION DICTIONARY (i18n) ---
+        // Localization Dictionary
         const i18n = {
             en: {
                 appTitle: "Stock Tycoon",
@@ -988,17 +983,6 @@
             if (el) el.textContent = text;
         }
 
-        // FIREBASE CONFIG
-        const firebaseConfig = {
-            apiKey: "AIzaSyB1S4w_5o1I_hyne5yJLq1pDvUjGP-UX2I",
-            authDomain: "stock-tycoon-fca67.firebaseapp.com",
-            projectId: "stock-tycoon-fca67",
-            storageBucket: "stock-tycoon-fca67.firebasestorage.app",
-            messagingSenderId: "952193600303",
-            appId: "1:952193600303:web:3dcb42a0986ab40eedefda",
-            measurementId: "G-1ZHC35PYFP"
-        };
-
         class AudioManager {
             constructor() {
                 this.bgmVolume = 0.5;
@@ -1009,67 +993,75 @@
 
             init() {
                 if (this.isInitialized) return;
-                Tone.start();
-                this.isInitialized = true;
+                try {
+                    Tone.start();
+                    this.isInitialized = true;
 
-                this.clickSynth = new Tone.MembraneSynth({
-                    pitchDecay: 0.01, octaves: 2, oscillator: { type: "sine" },
-                    envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 }
-                }).toDestination();
+                    this.clickSynth = new Tone.MembraneSynth({
+                        pitchDecay: 0.01, octaves: 2, oscillator: { type: "sine" },
+                        envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 }
+                    }).toDestination();
 
-                this.buySynth = new Tone.PolySynth(Tone.Synth, {
-                    oscillator: { type: "triangle" },
-                    envelope: { attack: 0.01, decay: 0.15, sustain: 0.1, release: 0.2 }
-                }).toDestination();
+                    this.buySynth = new Tone.PolySynth(Tone.Synth, {
+                        oscillator: { type: "triangle" },
+                        envelope: { attack: 0.01, decay: 0.15, sustain: 0.1, release: 0.2 }
+                    }).toDestination();
 
-                this.errorSynth = new Tone.Synth({
-                    oscillator: { type: "sawtooth" },
-                    envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.1 }
-                }).toDestination();
+                    this.errorSynth = new Tone.Synth({
+                        oscillator: { type: "sawtooth" },
+                        envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.1 }
+                    }).toDestination();
 
-                this.newsGoodSynth = new Tone.PolySynth(Tone.Synth).toDestination();
-                this.newsBadSynth = new Tone.PolySynth(Tone.Synth).toDestination();
-                this.prestigeSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+                    this.newsGoodSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+                    this.newsBadSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+                    this.prestigeSynth = new Tone.PolySynth(Tone.Synth).toDestination();
 
-                this.bgmSynth = new Tone.PolySynth(Tone.Synth, {
-                    oscillator: { type: "sine" },
-                    envelope: { attack: 0.8, decay: 1.5, sustain: 0.4, release: 1.5 }
-                }).toDestination();
+                    this.bgmSynth = new Tone.PolySynth(Tone.Synth, {
+                        oscillator: { type: "sine" },
+                        envelope: { attack: 0.8, decay: 1.5, sustain: 0.4, release: 1.5 }
+                    }).toDestination();
 
-                this.updateVolumes();
-                this.startBGM();
+                    this.updateVolumes();
+                    this.startBGM();
+                } catch(e) {
+                    console.warn("Audio init bypassed:", e);
+                }
             }
 
             updateVolumes() {
                 if (!this.isInitialized) return;
-                const bgmDb = this.bgmVolume <= 0 ? -Infinity : Tone.gainToDb(this.bgmVolume * 0.15);
-                const sfxDb = this.sfxVolume <= 0 ? -Infinity : Tone.gainToDb(this.sfxVolume * 0.6);
+                try {
+                    const bgmDb = this.bgmVolume <= 0 ? -Infinity : Tone.gainToDb(this.bgmVolume * 0.15);
+                    const sfxDb = this.sfxVolume <= 0 ? -Infinity : Tone.gainToDb(this.sfxVolume * 0.6);
 
-                if (this.bgmSynth) this.bgmSynth.volume.value = bgmDb;
-                if (this.clickSynth) this.clickSynth.volume.value = sfxDb;
-                if (this.buySynth) this.buySynth.volume.value = sfxDb;
-                if (this.errorSynth) this.errorSynth.volume.value = sfxDb;
-                if (this.newsGoodSynth) this.newsGoodSynth.volume.value = sfxDb;
-                if (this.newsBadSynth) this.newsBadSynth.volume.value = sfxDb;
-                if (this.prestigeSynth) this.prestigeSynth.volume.value = sfxDb;
+                    if (this.bgmSynth) this.bgmSynth.volume.value = bgmDb;
+                    if (this.clickSynth) this.clickSynth.volume.value = sfxDb;
+                    if (this.buySynth) this.buySynth.volume.value = sfxDb;
+                    if (this.errorSynth) this.errorSynth.volume.value = sfxDb;
+                    if (this.newsGoodSynth) this.newsGoodSynth.volume.value = sfxDb;
+                    if (this.newsBadSynth) this.newsBadSynth.volume.value = sfxDb;
+                    if (this.prestigeSynth) this.prestigeSynth.volume.value = sfxDb;
+                } catch(e) {}
             }
 
-            playClick() { if (this.isInitialized && this.sfxVolume > 0) this.clickSynth.triggerAttackRelease("C4", "16n"); }
-            playBuy() { if (this.isInitialized && this.sfxVolume > 0) this.buySynth.triggerAttackRelease(["C5", "E5", "G5"], "8n"); }
-            playError() { if (this.isInitialized && this.sfxVolume > 0) this.errorSynth.triggerAttackRelease("A2", "8n"); }
-            playNewsGood() { if (this.isInitialized && this.sfxVolume > 0) this.newsGoodSynth.triggerAttackRelease(["G4", "C5", "E5", "G5"], "8n"); }
-            playNewsBad() { if (this.isInitialized && this.sfxVolume > 0) this.newsBadSynth.triggerAttackRelease(["F4", "Db4", "Ab3"], "8n"); }
-            playPrestige() { if (this.isInitialized && this.sfxVolume > 0) this.prestigeSynth.triggerAttackRelease(["C4", "E4", "G4", "B4", "D5"], "2n"); }
+            playClick() { try { if (this.isInitialized && this.sfxVolume > 0) this.clickSynth.triggerAttackRelease("C4", "16n"); } catch(e){} }
+            playBuy() { try { if (this.isInitialized && this.sfxVolume > 0) this.buySynth.triggerAttackRelease(["C5", "E5", "G5"], "8n"); } catch(e){} }
+            playError() { try { if (this.isInitialized && this.sfxVolume > 0) this.errorSynth.triggerAttackRelease("A2", "8n"); } catch(e){} }
+            playNewsGood() { try { if (this.isInitialized && this.sfxVolume > 0) this.newsGoodSynth.triggerAttackRelease(["G4", "C5", "E5", "G5"], "8n"); } catch(e){} }
+            playNewsBad() { try { if (this.isInitialized && this.sfxVolume > 0) this.newsBadSynth.triggerAttackRelease(["F4", "Db4", "Ab3"], "8n"); } catch(e){} }
+            playPrestige() { try { if (this.isInitialized && this.sfxVolume > 0) this.prestigeSynth.triggerAttackRelease(["C4", "E4", "G4", "B4", "D5"], "2n"); } catch(e){} }
 
             startBGM() {
-                if (this.bgmLoop) return;
-                const chords = [ ["C4", "E4", "G4"], ["A3", "C4", "E4"], ["F3", "A3", "C4"], ["G3", "B3", "D4"] ];
-                let index = 0;
-                this.bgmLoop = new Tone.Loop(time => {
-                    if (this.bgmVolume > 0) this.bgmSynth.triggerAttackRelease(chords[index], "2n", time);
-                    index = (index + 1) % chords.length;
-                }, "2m").start(0);
-                Tone.Transport.start();
+                try {
+                    if (this.bgmLoop) return;
+                    const chords = [ ["C4", "E4", "G4"], ["A3", "C4", "E4"], ["F3", "A3", "C4"], ["G3", "B3", "D4"] ];
+                    let index = 0;
+                    this.bgmLoop = new Tone.Loop(time => {
+                        if (this.bgmVolume > 0) this.bgmSynth.triggerAttackRelease(chords[index], "2n", time);
+                        index = (index + 1) % chords.length;
+                    }, "2m").start(0);
+                    Tone.Transport.start();
+                } catch(e) {}
             }
         }
 
@@ -1093,7 +1085,7 @@
             feverGauge: 0,
             isFever: false,
             nickname: '',
-            userId: '',
+            userId: 'user_' + Math.random().toString(36).substring(2, 10),
             karma: 0,
             skills: {
                 incomeMulti: { level: 0, maxLevel: 50, baseCost: 10, costGrowth: 1.3, effectBase: 0, effectGrowth: 0.1, desc: { en: "Global Income Multiplier (Tap/Auto/Rent)", ko: "전체 수익 증가 (터치/오토/월세)" }, format: "%" },
@@ -1124,10 +1116,8 @@
             selectedStockId: null
         });
 
-        // Initialize gameState safely
         gameState = getInitialGameState();
 
-        // Ranks definition
         const ranks = [
             { min: 0, title: { en: '🌱 Dirt Spoon', ko: '🌱 흙수저' }, clickBuff: 0, reBuff: 0, bgUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&q=80', loanLimit: 1000000, loanInterest: 0.20 },
             { min: 50000, title: { en: '🥉 Bronze Spoon', ko: '🥉 동수저' }, clickBuff: 0.1, reBuff: 0.05, bgUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80', loanLimit: 10000000, loanInterest: 0.15 },
@@ -1256,6 +1246,57 @@
                 btnNextTutorial: document.getElementById('btnNextTutorial'),
                 btnSkipTutorial: document.getElementById('btnSkipTutorial')
             };
+        }
+
+        // CRAZYGAMES REWARDED AD WORKFLOW
+        function watchAdForStockReward() {
+            audio.init();
+            
+            if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.ad) {
+                console.log("CrazyGames Rewarded Ad Requested");
+                
+                window.CrazyGames.SDK.ad.requestAd("rewarded", {
+                    adStarted: () => {
+                        try {
+                            if (Tone.Transport && Tone.Transport.state === "started") {
+                                Tone.Transport.pause();
+                            }
+                        } catch(e){}
+                    },
+                    adFinished: () => {
+                        try {
+                            if (Tone.Transport && Tone.Transport.state === "paused") {
+                                Tone.Transport.start();
+                            }
+                        } catch(e){}
+                        grantRandomStockReward();
+                    },
+                    adError: (error) => {
+                        try {
+                            if (Tone.Transport && Tone.Transport.state === "paused") {
+                                Tone.Transport.start();
+                            }
+                        } catch(e){}
+                        console.warn("CrazyGames Ad Error/Dismissed:", error);
+                        showNewsToast(gameState.lang === 'ko' ? "⚠️ 광고 시청이 완료되어야 보상이 지급됩니다." : "⚠️ Finish watching the ad to get the reward.", false);
+                    }
+                });
+            } else {
+                console.log("Local preview ad fallback triggered");
+                grantRandomStockReward();
+            }
+        }
+
+        function grantRandomStockReward() {
+            if (!gameState || !gameState.stocks || gameState.stocks.length === 0) return;
+            const randomStock = gameState.stocks[Math.floor(Math.random() * gameState.stocks.length)];
+            randomStock.owned += 1;
+            if (randomStock.avgPrice === 0) randomStock.avgPrice = randomStock.price;
+            audio.playBuy();
+            updateDisplays();
+            renderStockList();
+            const stockName = typeof randomStock.name === 'object' ? randomStock.name[gameState.lang] : randomStock.name;
+            showNewsToast(`🎉 +1 ${stockName} Stock Granted!`, true);
         }
 
         function formatCurrency(num) { 
@@ -2066,8 +2107,6 @@
             if (flexTab && !flexTab.classList.contains('hidden')) {
                 renderFlexList();
             }
-
-            saveGame();
         }
 
         function openTradeModal(stockId) {
@@ -2213,65 +2252,81 @@
             });
         }
 
-        async function initFirebase() {
-            try {
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app); db = getFirestore(app);
-                const userCred = await signInAnonymously(auth);
-                currentUser = userCred.user; gameState.userId = currentUser.uid;
-
-                if (!gameState.nickname && els.nicknameModal) els.nicknameModal.classList.remove('hidden');
-                else syncUserToFirebase();
-            } catch (e) {
-                console.warn("Firebase fallback mode:", e);
-                if (!gameState.nickname && els.nicknameModal) els.nicknameModal.classList.remove('hidden');
-            }
-        }
-
+        // 경량화된 Firebase REST API 수신/발송 (웹채널 통신 에러 완전 차단)
         async function syncUserToFirebase() {
             if (!gameState.nickname) return;
             try {
-                if (db && currentUser) {
-                    const userRef = doc(db, 'rankings', currentUser.uid);
-                    const currentRank = getCurrentRankObj();
-                    const rankTitleText = typeof currentRank.title === 'object' ? currentRank.title.en : currentRank.title;
-                    await setDoc(userRef, { nickname: gameState.nickname, totalAsset: getTotalAsset(), rankTitle: rankTitleText, updatedAt: new Date() }, { merge: true });
-                }
-            } catch (e) { console.warn("Sync warning:", e); }
+                const currentRank = getCurrentRankObj();
+                const rankTitleText = typeof currentRank.title === 'object' ? currentRank.title.en : currentRank.title;
+                
+                const url = `${FIREBASE_REST_BASE}/rankings/${gameState.userId}?updateMask.fieldPaths=nickname&updateMask.fieldPaths=totalAsset&updateMask.fieldPaths=rankTitle`;
+                
+                await fetch(url, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fields: {
+                            nickname: { stringValue: gameState.nickname },
+                            totalAsset: { doubleValue: getTotalAsset() },
+                            rankTitle: { stringValue: rankTitleText }
+                        }
+                    })
+                });
+            } catch (e) {
+                console.warn("REST Sync bypass:", e);
+            }
         }
 
         async function fetchLeaderboard() {
-            if (!db) {
-                renderMockLeaderboard();
-                return;
-            }
             try {
-                const q = query(collection(db, 'rankings'), orderBy('totalAsset', 'desc'), limit(20));
-                const querySnapshot = await getDocs(q);
+                const url = `${FIREBASE_REST_BASE}:runQuery`;
+                const queryBody = {
+                    structuredQuery: {
+                        from: [{ collectionId: "rankings" }],
+                        orderBy: [{ field: { fieldPath: "totalAsset" }, direction: "DESCENDING" }],
+                        limit: 20
+                    }
+                };
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(queryBody)
+                });
+                
+                const data = await res.json();
                 els.leaderboardList.innerHTML = '';
 
                 let rank = 1;
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const isMe = docSnap.id === currentUser?.uid;
+                if (Array.isArray(data)) {
+                    data.forEach((item) => {
+                        if (!item.document) return;
+                        const fields = item.document.fields;
+                        const docId = item.document.name.split('/').pop();
+                        const isMe = docId === gameState.userId;
 
-                    const item = document.createElement('div');
-                    item.className = `p-3 rounded-2xl border flex items-center justify-between ${isMe ? 'bg-amber-500/20 border-amber-500/60 ring-2 ring-amber-400/50' : 'bg-slate-900 border-slate-800'}`;
-                    item.innerHTML = `
-                        <div class="flex items-center space-x-3">
-                            <span class="font-black text-sm w-6 text-center ${rank === 1 ? 'text-amber-400' : rank === 2 ? 'text-slate-300' : rank === 3 ? 'text-amber-600' : 'text-slate-500'}">#${rank}</span>
-                            <div>
-                                <h4 class="font-bold text-xs text-white">${data.nickname || 'Anonymous'} ${isMe ? '<span class="text-[9px] bg-amber-400 text-slate-950 px-1 rounded font-bold">YOU</span>' : ''}</h4>
-                                <span class="text-[9px] text-slate-400 font-bold">${data.rankTitle || '🌱 Dirt Spoon'}</span>
+                        const nick = fields.nickname ? fields.nickname.stringValue : 'Anonymous';
+                        const asset = fields.totalAsset ? (fields.totalAsset.doubleValue || fields.totalAsset.integerValue || 0) : 0;
+                        const rTitle = fields.rankTitle ? fields.rankTitle.stringValue : '🌱 Dirt Spoon';
+
+                        const div = document.createElement('div');
+                        div.className = `p-3 rounded-2xl border flex items-center justify-between ${isMe ? 'bg-amber-500/20 border-amber-500/60 ring-2 ring-amber-400/50' : 'bg-slate-900 border-slate-800'}`;
+                        div.innerHTML = `
+                            <div class="flex items-center space-x-3">
+                                <span class="font-black text-sm w-6 text-center ${rank === 1 ? 'text-amber-400' : rank === 2 ? 'text-slate-300' : rank === 3 ? 'text-amber-600' : 'text-slate-500'}">#${rank}</span>
+                                <div>
+                                    <h4 class="font-bold text-xs text-white">${nick} ${isMe ? '<span class="text-[9px] bg-amber-400 text-slate-950 px-1 rounded font-bold">YOU</span>' : ''}</h4>
+                                    <span class="text-[9px] text-slate-400 font-bold">${rTitle}</span>
+                                </div>
                             </div>
-                        </div>
-                        <span class="font-black text-xs text-amber-300">${formatCurrency(data.totalAsset || 0)}</span>
-                    `;
-                    els.leaderboardList.appendChild(item);
-                    rank++;
-                });
+                            <span class="font-black text-xs text-amber-300">${formatCurrency(asset)}</span>
+                        `;
+                        els.leaderboardList.appendChild(div);
+                        rank++;
+                    });
+                }
             } catch (e) { 
-                console.warn("Leaderboard fetch error:", e);
+                console.warn("Leaderboard REST error:", e);
                 renderMockLeaderboard();
             }
         }
@@ -2387,7 +2442,6 @@
         }
 
         function setupEventListeners() {
-            // Tab Navigation
             const navBtns = document.querySelectorAll('.nav-btn');
             const tabs = { 
                 'tab-work': document.getElementById('tab-work'), 
@@ -2431,28 +2485,15 @@
                 });
             });
 
-            // Work Button
             if (els.workBtn) {
                 els.workBtn.addEventListener('touchstart', (e) => { e.preventDefault(); doWork(e); }, { passive: false });
                 els.workBtn.addEventListener('mousedown', (e) => { if (e.button === 0) doWork(e); });
             }
 
-            // Reward Ad
             if (els.btnWatchAdStock) {
-                els.btnWatchAdStock.addEventListener('click', () => {
-                    audio.init();
-                    const randomStock = gameState.stocks[Math.floor(Math.random() * gameState.stocks.length)];
-                    randomStock.owned += 1;
-                    if (randomStock.avgPrice === 0) randomStock.avgPrice = randomStock.price;
-                    audio.playBuy();
-                    updateDisplays();
-                    renderStockList();
-                    const stockName = typeof randomStock.name === 'object' ? randomStock.name[gameState.lang] : randomStock.name;
-                    showNewsToast(`🎉 +1 ${stockName} Stock Granted!`, true);
-                });
+                els.btnWatchAdStock.addEventListener('click', watchAdForStockReward);
             }
 
-            // Upgrades
             if (els.btnUpgClick) els.btnUpgClick.addEventListener('click', () => { audio.init(); const cost = getUpgCost(gameState.clickUpg); if (gameState.cash >= cost) { audio.playBuy(); gameState.cash -= cost; gameState.clickUpg.level++; updateDisplays(); } else audio.playError(); });
             if (els.btnUpgClickMax) els.btnUpgClickMax.addEventListener('click', () => maxUpgrade(gameState.clickUpg));
             
@@ -2465,7 +2506,6 @@
             if (els.btnUpgFeverMulti) els.btnUpgFeverMulti.addEventListener('click', () => { audio.init(); const cost = getUpgCost(gameState.feverMultiUpg); if (gameState.cash >= cost) { audio.playBuy(); gameState.cash -= cost; gameState.feverMultiUpg.level++; updateDisplays(); } else audio.playError(); });
             if (els.btnUpgFeverMultiMax) els.btnUpgFeverMultiMax.addEventListener('click', () => maxUpgrade(gameState.feverMultiUpg));
 
-            // Loan
             if (els.btnBorrowDec) { els.btnBorrowDec.addEventListener('click', () => { audio.init(); audio.playClick(); borrowRatio = Math.max(10, borrowRatio - 10); updateLoanUI(); }); }
             if (els.btnBorrowInc) { els.btnBorrowInc.addEventListener('click', () => { audio.init(); audio.playClick(); borrowRatio = Math.min(100, borrowRatio + 10); updateLoanUI(); }); }
             if (els.btnBorrowAction) { els.btnBorrowAction.addEventListener('click', () => {
@@ -2511,7 +2551,6 @@
                 } else audio.playError();
             });
 
-            // Settings
             if (els.btnOpenSettings) els.btnOpenSettings.addEventListener('click', () => { audio.init(); audio.playClick(); if (els.settingsModal) els.settingsModal.classList.remove('hidden'); });
             if (els.closeSettingsBtn) els.closeSettingsBtn.addEventListener('click', () => { audio.playClick(); if (els.settingsModal) els.settingsModal.classList.add('hidden'); });
             if (els.btnToggleLang) els.btnToggleLang.addEventListener('click', () => {
@@ -2524,7 +2563,6 @@
             if (els.bgmSlider) { els.bgmSlider.addEventListener('input', (e) => { audio.init(); audio.bgmVolume = e.target.value / 100; if (els.bgmVolText) els.bgmVolText.textContent = `${e.target.value}%`; audio.updateVolumes(); saveGame(); }); }
             if (els.sfxSlider) { els.sfxSlider.addEventListener('input', (e) => { audio.init(); audio.sfxVolume = e.target.value / 100; if (els.sfxVolText) els.sfxVolText.textContent = `${e.target.value}%`; audio.updateVolumes(); saveGame(); }); }
 
-            // Nickname Buttons & Input Listeners
             if (els.btnSubmitNickname) {
                 els.btnSubmitNickname.addEventListener('click', () => {
                     audio.init();
@@ -2559,12 +2597,10 @@
                 });
             }
 
-            // Reset
             if (els.btnResetGame) els.btnResetGame.addEventListener('click', () => { audio.init(); audio.playClick(); if (els.resetConfirmModal) els.resetConfirmModal.classList.remove('hidden'); });
             if (els.btnCancelReset) els.btnCancelReset.addEventListener('click', () => { audio.playClick(); if (els.resetConfirmModal) els.resetConfirmModal.classList.add('hidden'); });
             if (els.btnConfirmReset) els.btnConfirmReset.addEventListener('click', () => { audio.playClick(); localStorage.removeItem('stock_clicker_save'); location.reload(); });
             
-            // Prestige
             if (els.btnDoPrestige) els.btnDoPrestige.addEventListener('click', () => {
                 const gain = calculatePrestigeGain();
                 if (gain <= 0) return;
@@ -2587,7 +2623,6 @@
                 }
             });
 
-            // Modals
             if (els.closeModalBtn) els.closeModalBtn.addEventListener('click', closeTradeModal);
             if (els.buyBtn) els.buyBtn.addEventListener('click', () => buyStock(1));
             if (els.sellBtn) els.sellBtn.addEventListener('click', () => sellStock(1));
@@ -2599,11 +2634,19 @@
             if (els.btnOpenLeaderboard) els.btnOpenLeaderboard.addEventListener('click', () => { audio.init(); audio.playClick(); fetchLeaderboard(); if (els.leaderboardModal) els.leaderboardModal.classList.remove('hidden'); });
             if (els.closeLeaderboardBtn) els.closeLeaderboardBtn.addEventListener('click', () => { audio.playClick(); if (els.leaderboardModal) els.leaderboardModal.classList.add('hidden'); });
 
-            // Tutorial
             if (els.btnNextTutorial) els.btnNextTutorial.addEventListener('click', nextTutorialStep);
             if (els.btnSkipTutorial) els.btnSkipTutorial.addEventListener('click', skipTutorial);
+
+            // 탭 이탈 또는 창 닫을 때 안전하게 저장
+            window.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    saveGame();
+                }
+            });
+            window.addEventListener('beforeunload', saveGame);
         }
 
+        // 최적화된 저해상도 저장 함수 (터치 시 스팸 호출 제거)
         function saveGame() {
             try {
                 localStorage.setItem('stock_clicker_save', JSON.stringify({
@@ -2613,7 +2656,8 @@
                     clickUpg: gameState.clickUpg, autoUpg: gameState.autoUpg,
                     feverGaugeUpg: gameState.feverGaugeUpg, feverMultiUpg: gameState.feverMultiUpg,
                     stocks: gameState.stocks, realEstate: gameState.realEstate,
-                    nickname: gameState.nickname, karma: gameState.karma, skills: gameState.skills,
+                    nickname: gameState.nickname, userId: gameState.userId,
+                    karma: gameState.karma, skills: gameState.skills,
                     lang: gameState.lang, tutorialStep: gameState.tutorialStep, tutorialCompleted: gameState.tutorialCompleted,
                     audioSettings: { bgm: audio.bgmVolume, sfx: audio.sfxVolume }
                 }));
@@ -2640,6 +2684,7 @@
                     if (parsed.feverMultiUpg) gameState.feverMultiUpg = { ...defaults.feverMultiUpg, ...parsed.feverMultiUpg };
                     
                     if (parsed.nickname) gameState.nickname = parsed.nickname;
+                    if (parsed.userId) gameState.userId = parsed.userId;
                     if (parsed.karma) gameState.karma = parsed.karma;
                     if (parsed.skills) {
                         Object.keys(gameState.skills).forEach(key => { if(parsed.skills[key]) gameState.skills[key].level = parsed.skills[key].level; });
@@ -2655,7 +2700,6 @@
             } catch (e) {}
         }
 
-        // Global functions attachment
         window.buyRealEstate = buyRealEstate;
         window.sellRealEstate = sellRealEstate;
         window.openTradeModal = openTradeModal;
@@ -2667,7 +2711,6 @@
             initDOMElements();
             loadGame();
             setupEventListeners();
-            initFirebase();
             applyLanguageTranslations();
             updateDisplays();
             renderStockList();
@@ -2677,15 +2720,18 @@
                 runTutorialStep();
             }
 
-            if (gameState.nickname) {
+            if (!gameState.nickname && els.nicknameModal) {
+                els.nicknameModal.classList.remove('hidden');
+            } else {
                 if (els.settingNicknameInput) els.settingNicknameInput.value = gameState.nickname;
                 if (els.nicknameInput) els.nicknameInput.value = gameState.nickname;
+                syncUserToFirebase();
             }
 
             if (els.bgmSlider) { els.bgmSlider.value = audio.bgmVolume * 100; if(els.bgmVolText) els.bgmVolText.textContent = `${els.bgmSlider.value}%`; }
             if (els.sfxSlider) { els.sfxSlider.value = audio.sfxVolume * 100; if(els.sfxVolText) els.sfxVolText.textContent = `${els.sfxSlider.value}%`; }
 
-            // Start interval timers
+            // 1초 단위 게임 루프
             setInterval(() => {
                 const totalAuto = gameState.autoPower + gameState.realEstatePower;
                 if (totalAuto > 0) { gameState.cash += totalAuto; updateDisplays(); }
@@ -2708,6 +2754,7 @@
 
             }, 1000);
 
+            // 주가 변동 및 정기 저장 루프 (10초 주기)
             setInterval(() => {
                 gameState.updateTimer--;
                 if (gameState.updateTimer <= 0) { 
@@ -2719,6 +2766,7 @@
                     gameState.updateTimer = 10; 
                 }
                 if (els.marketTimer) els.marketTimer.textContent = `Next: ${gameState.updateTimer}s`;
+                saveGame(); // 주기적 안전 저장
             }, 1000);
 
             setInterval(syncUserToFirebase, 30000);
