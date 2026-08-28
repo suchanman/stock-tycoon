@@ -13,9 +13,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
     <!-- Tone.js for Sound Effects & Synthesizer BGM -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js" crossorigin="anonymous"></script>
-    
+
     <!-- CrazyGames SDK v3 -->
     <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js" crossorigin="anonymous"></script>
+
     <script>
         window.addEventListener("load", async function() {
             try {
@@ -31,6 +32,7 @@
             }
         });
     </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&family=Plus+Jakarta+Sans:wght@400;600;800;900&display=swap');
         
@@ -118,18 +120,19 @@
 
         @keyframes floatUp {
             0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-70px) scale(1.4); opacity: 0; }
+            100% { transform: translateY(-60px) scale(1.3); opacity: 0; }
         }
 
         .click-text {
             position: fixed;
             color: #34d399;
             font-weight: 900;
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             pointer-events: none;
-            animation: floatUp 0.7s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            animation: floatUp 0.6s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
             z-index: 60;
             text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            will-change: transform, opacity;
         }
 
         @keyframes pulseGlow {
@@ -150,6 +153,13 @@
             animation: bounceSlow 1.8s infinite ease-in-out;
         }
 
+        .asset-sprite {
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .asset-sprite:hover {
+            transform: scale(1.15);
+        }
+
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background-color: #475569; border-radius: 9999px; }
@@ -160,95 +170,99 @@
     <div id="bgLayer"></div>
     <canvas id="particleCanvas"></canvas>
 
-    <header class="bg-slate-900/90 text-white p-3.5 shadow-xl z-20 flex-shrink-0 relative backdrop-blur-md border-b border-slate-700/80">
+    <header class="bg-slate-900/90 text-white p-3 shadow-xl z-20 flex-shrink-0 relative backdrop-blur-md border-b border-slate-700/80">
         <div class="flex justify-between items-center mb-1.5">
-            <h1 class="text-lg font-black tracking-tight flex items-center space-x-1.5">
+            <h1 class="text-base font-black tracking-tight flex items-center space-x-1.5">
                 <span>📈</span>
                 <span class="text-amber-400 drop-shadow-md" id="txt_appTitle">Stock Tycoon</span>
             </h1>
-            <div class="flex items-center space-x-1.5">
-                <button id="btnOpenLeaderboard" class="bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 text-[11px] font-black px-2.5 py-1 rounded-full shadow-sm flex items-center space-x-1 transition-all cursor-pointer">
+            <div class="flex items-center space-x-1">
+                <button id="btnOpenAchievements" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-[10px] font-black px-2 py-1 rounded-full shadow-sm flex items-center space-x-1 transition-all cursor-pointer border border-indigo-400/40">
+                    <i class="fas fa-medal text-amber-300"></i>
+                    <span id="txt_achievementsBtn">Badges</span>
+                </button>
+                <button id="btnOpenLeaderboard" class="bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 text-[10px] font-black px-2 py-1 rounded-full shadow-sm flex items-center space-x-1 transition-all cursor-pointer">
                     <i class="fas fa-trophy text-amber-950"></i>
                     <span id="txt_leaderboardBtn">Ranks</span>
                 </button>
-                <button id="btnOpenRankModal" class="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-slate-950 text-[11px] font-black px-2.5 py-1 rounded-full shadow-sm flex items-center space-x-1 active:scale-95 transition-all border border-yellow-300 cursor-pointer">
+                <button id="btnOpenRankModal" class="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-slate-950 text-[10px] font-black px-2 py-1 rounded-full shadow-sm flex items-center space-x-1 active:scale-95 transition-all border border-yellow-300 cursor-pointer">
                     <span id="rankDisplay">🌱 Dirt Spoon</span>
-                    <i class="fas fa-search text-[9px] opacity-70"></i>
+                    <i class="fas fa-search text-[8px] opacity-70"></i>
                 </button>
                 <button id="btnOpenSettings" class="text-slate-300 hover:text-white transition-colors p-1 active:scale-95 cursor-pointer">
-                    <i class="fas fa-cog"></i>
+                    <i class="fas fa-cog text-sm"></i>
                 </button>
             </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-1.5 text-sm bg-slate-950/80 p-2.5 rounded-2xl border border-slate-700/60 backdrop-blur-sm">
+        <div class="grid grid-cols-3 gap-1 text-sm bg-slate-950/80 p-2 rounded-2xl border border-slate-700/60 backdrop-blur-sm">
             <div class="flex flex-col justify-center text-center">
-                <p class="text-slate-400 text-[9px] font-bold uppercase tracking-wider" id="txt_hdrCash">Cash</p>
-                <p id="cashDisplay" class="font-black text-xs sm:text-sm text-emerald-400 truncate mt-0.5">$0</p>
+                <p class="text-slate-400 text-[8px] font-bold uppercase tracking-wider" id="txt_hdrCash">Cash</p>
+                <p id="cashDisplay" class="font-black text-xs text-emerald-400 truncate mt-0.5">$0</p>
             </div>
             <div class="flex flex-col justify-center text-center border-l border-slate-800">
-                <p class="text-slate-400 text-[9px] font-bold uppercase tracking-wider" id="txt_hdrPortfolio">Portfolio</p>
-                <p id="stockAccountDisplay" class="font-black text-xs sm:text-sm text-cyan-300 truncate mt-0.5">$0</p>
+                <p class="text-slate-400 text-[8px] font-bold uppercase tracking-wider" id="txt_hdrPortfolio">Portfolio</p>
+                <p id="stockAccountDisplay" class="font-black text-xs text-cyan-300 truncate mt-0.5">$0</p>
                 <span id="totalProfitRateDisplay" class="text-[8px] font-bold text-slate-400 mt-0.5">0.0%</span>
             </div>
             <div class="flex flex-col justify-center text-center border-l border-slate-800">
-                <p class="text-slate-400 text-[9px] font-bold uppercase tracking-wider" id="txt_hdrNetWorth">Net Worth</p>
-                <p id="totalAssetDisplay" class="font-black text-xs sm:text-sm text-amber-300 truncate mt-0.5">$0</p>
+                <p class="text-slate-400 text-[8px] font-bold uppercase tracking-wider" id="txt_hdrNetWorth">Net Worth</p>
+                <p id="totalAssetDisplay" class="font-black text-xs text-amber-300 truncate mt-0.5">$0</p>
             </div>
         </div>
         
-        <div id="prestigeCurrencyHeader" class="hidden mt-2 bg-gradient-to-r from-emerald-950/90 to-teal-950/90 rounded-xl p-1.5 border border-emerald-500/50 flex justify-between items-center px-3">
-            <span class="text-[10px] font-black text-emerald-300" id="txt_hdrKarma">💎 Karma (Prestige)</span>
+        <div id="prestigeCurrencyHeader" class="hidden mt-1.5 bg-gradient-to-r from-emerald-950/90 to-teal-950/90 rounded-xl p-1 border border-emerald-500/50 flex justify-between items-center px-2.5">
+            <span class="text-[9px] font-black text-emerald-300" id="txt_hdrKarma">💎 Karma (Prestige)</span>
             <span id="karmaDisplay" class="text-xs font-black text-white">0</span>
         </div>
 
-        <div class="mt-2 bg-slate-950/90 rounded-xl px-2.5 py-1 flex items-center space-x-2 border border-slate-800 text-xs overflow-hidden" id="newsBarContainer">
-            <span id="newsTagBadge" class="bg-slate-700 text-white font-black px-1.5 py-0.5 rounded text-[10px] flex-shrink-0 uppercase">NEWS</span>
-            <p id="newsTicker" class="text-slate-200 font-medium truncate text-[11px]">Stock market trading session started.</p>
+        <div class="mt-1.5 bg-slate-950/90 rounded-xl px-2 py-1 flex items-center space-x-2 border border-slate-800 text-xs overflow-hidden" id="newsBarContainer">
+            <span id="newsTagBadge" class="bg-slate-700 text-white font-black px-1.5 py-0.5 rounded text-[9px] flex-shrink-0 uppercase">NEWS</span>
+            <p id="newsTicker" class="text-slate-200 font-medium truncate text-[10px]">Stock market trading session started.</p>
         </div>
     </header>
 
     <main class="flex-1 relative overflow-hidden bg-slate-900/90 backdrop-blur-md flex flex-col rounded-t-3xl -mt-4 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.3)] border-t border-slate-700/50">
         
         <!-- Tab 1: Work (Clicker) -->
-        <div id="tab-work" class="w-full h-full flex flex-col items-center justify-between p-5 overflow-y-auto pb-24">
-            <div class="text-center mt-2 w-full flex-shrink-0">
-                <span class="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold px-3 py-1 rounded-full inline-block mb-1.5 shadow-sm" id="txt_clickerMode">CLICKER MODE</span>
-                <h2 class="text-xl font-black text-white" id="txt_tapTitle">Tap to Earn Cash</h2>
-                <div class="mt-2 w-full max-w-xs mx-auto bg-slate-800 rounded-full h-3.5 p-0.5 shadow-inner relative overflow-hidden border border-slate-700">
+        <div id="tab-work" class="w-full h-full flex flex-col items-center justify-between p-4 overflow-y-auto pb-24">
+            <div class="text-center mt-1 w-full flex-shrink-0">
+                <span class="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold px-2.5 py-0.5 rounded-full inline-block mb-1 shadow-sm" id="txt_clickerMode">CLICKER MODE</span>
+                <h2 class="text-lg font-black text-white" id="txt_tapTitle">Tap to Earn Cash</h2>
+                <div class="mt-1.5 w-full max-w-xs mx-auto bg-slate-800 rounded-full h-3 p-0.5 shadow-inner relative overflow-hidden border border-slate-700">
                     <div id="feverBar" class="bg-gradient-to-r from-amber-400 to-red-500 h-full rounded-full transition-all duration-150 w-0"></div>
-                    <span id="feverText" class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-slate-200 drop-shadow">TAP FAST FOR FEVER!</span>
+                    <span id="feverText" class="absolute inset-0 flex items-center justify-center text-[9px] font-black text-slate-200 drop-shadow">TAP FAST FOR FEVER!</span>
                 </div>
             </div>
 
-            <div class="relative my-auto flex items-center justify-center py-4">
-                <button id="workBtn" class="work-btn-pulse w-52 h-52 sm:w-60 sm:h-60 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-full shadow-[0_15px_35px_rgba(245,158,11,0.5)] flex flex-col items-center justify-center transition-transform active:scale-90 focus:outline-none border-4 border-yellow-200 relative group cursor-pointer">
-                    <i id="workBtnIcon" class="fas fa-hand-pointer text-5xl text-white mb-2 drop-shadow-lg group-active:scale-95 transition-transform"></i>
-                    <span id="workBtnText" class="text-white font-black text-3xl tracking-wider drop-shadow-md">CLICK!</span>
-                    <div class="absolute -bottom-4 bg-slate-900 text-amber-400 px-4 py-1.5 rounded-full text-xs font-black shadow-xl border border-amber-400/40 flex items-center space-x-1">
+            <div class="relative my-auto flex items-center justify-center py-2">
+                <button id="workBtn" class="work-btn-pulse w-48 h-52 sm:w-56 sm:h-56 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-full shadow-[0_15px_35px_rgba(245,158,11,0.5)] flex flex-col items-center justify-center transition-transform active:scale-90 focus:outline-none border-4 border-yellow-200 relative group cursor-pointer">
+                    <i id="workBtnIcon" class="fas fa-hand-pointer text-4xl sm:text-5xl text-white mb-2 drop-shadow-lg group-active:scale-95 transition-transform"></i>
+                    <span id="workBtnText" class="text-white font-black text-2xl sm:text-3xl tracking-wider drop-shadow-md">CLICK!</span>
+                    <div class="absolute -bottom-4 bg-slate-900 text-amber-400 px-3.5 py-1 rounded-full text-xs font-black shadow-xl border border-amber-400/40 flex items-center space-x-1">
                         <span id="txt_perTapLabel">Per Tap</span>
-                        <span class="text-sm font-black text-amber-300"><span id="clickPowerDisplay">$10</span></span>
+                        <span class="text-xs font-black text-amber-300"><span id="clickPowerDisplay">$10</span></span>
                     </div>
                 </button>
             </div>
 
-            <div class="w-full max-w-xs mx-auto flex-shrink-0 my-2">
-                <button id="btnWatchAdStock" class="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 active:scale-95 text-white font-black py-2.5 px-4 rounded-2xl shadow-lg border border-indigo-300/40 flex items-center justify-center space-x-2 transition-all cursor-pointer">
-                    <i class="fas fa-tv text-yellow-300 text-sm animate-pulse"></i>
-                    <span class="text-xs" id="txt_rewardAdBtn">Free 1 Random Stock (Watch Ad)</span>
+            <div class="w-full max-w-xs mx-auto flex-shrink-0 my-1">
+                <button id="btnWatchAdStock" class="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 active:scale-95 text-white font-black py-2 px-3 rounded-xl shadow-lg border border-indigo-300/40 flex items-center justify-center space-x-2 transition-all cursor-pointer">
+                    <i class="fas fa-tv text-yellow-300 text-xs animate-pulse"></i>
+                    <span class="text-[11px]" id="txt_rewardAdBtn">Free 1 Random Stock (Watch Ad)</span>
                 </button>
             </div>
 
-            <div class="bg-slate-800/80 backdrop-blur-sm rounded-xl p-2.5 border border-slate-700/60 text-center w-full mb-1 shadow-sm flex-shrink-0">
+            <div class="bg-slate-800/80 backdrop-blur-sm rounded-xl p-2 border border-slate-700/60 text-center w-full mb-1 shadow-sm flex-shrink-0">
                 <div class="flex justify-around text-xs text-slate-300">
                     <div>
-                        <span class="text-slate-400 block text-[10px]" id="txt_lblAutoIncome">Auto Income</span>
-                        <span class="font-bold text-purple-400"><span id="autoPowerDisplay">$0</span> /s</span>
+                        <span class="text-slate-400 block text-[9px]" id="txt_lblAutoIncome">Auto Income</span>
+                        <span class="font-bold text-purple-400 text-xs"><span id="autoPowerDisplay">$0</span> /s</span>
                     </div>
                     <div class="border-r border-slate-700"></div>
                     <div>
-                        <span class="text-slate-400 block text-[10px]" id="txt_lblRentIncome">Rental Income</span>
-                        <span class="font-bold text-emerald-400"><span id="realEstatePowerDisplay">$0</span> /s</span>
+                        <span class="text-slate-400 block text-[9px]" id="txt_lblRentIncome">Rental Income</span>
+                        <span class="font-bold text-emerald-400 text-xs"><span id="realEstatePowerDisplay">$0</span> /s</span>
                     </div>
                 </div>
             </div>
@@ -261,67 +275,67 @@
                 <p class="text-xs text-slate-400 mt-0.5" id="txt_upgSubHeader">Boost tap earnings and fever multiplier!</p>
             </div>
             
-            <div class="bg-slate-800/90 rounded-2xl p-3.5 shadow-sm border border-slate-700/80 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-11 h-11 rounded-2xl bg-orange-500/20 text-orange-400 flex items-center justify-center text-xl shadow-inner flex-shrink-0 border border-orange-500/30"><i class="fas fa-hand-pointer"></i></div>
+            <div class="bg-slate-800/90 rounded-2xl p-3 shadow-sm border border-slate-700/80 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-orange-500/20 text-orange-400 flex items-center justify-center text-lg shadow-inner flex-shrink-0 border border-orange-500/30"><i class="fas fa-hand-pointer"></i></div>
                     <div>
                         <h3 class="font-bold text-white text-xs sm:text-sm" id="txt_upgClickTitle">Tap Power Boost</h3>
                         <p class="text-[10px] text-slate-400 mt-0.5"><span id="txt_currLabel1">Cur:</span> <span class="font-bold text-slate-200" id="upgClickCurrent">$10</span></p>
                         <p class="text-[10px] text-orange-400 font-bold"><span id="txt_nextLabel1">Next:</span> <span id="upgClickNext">$20</span></p>
                     </div>
                 </div>
-                <div class="text-right flex items-center space-x-1.5">
+                <div class="text-right flex items-center space-x-1">
                     <div class="flex flex-col items-end mr-1"><span class="text-[9px] font-bold text-slate-400">Lv.<span id="upgClickLv">0</span></span></div>
-                    <button id="btnUpgClick" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-sm min-w-[65px]"><span id="upgClickCost">$50</span></button>
-                    <button id="btnUpgClickMax" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-2 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm cursor-pointer">MAX</button>
+                    <button id="btnUpgClick" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm min-w-[60px]"><span id="upgClickCost">$50</span></button>
+                    <button id="btnUpgClickMax" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-1.5 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm cursor-pointer">MAX</button>
                 </div>
             </div>
 
-            <div class="bg-slate-800/90 rounded-2xl p-3.5 shadow-sm border border-slate-700/80 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-11 h-11 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl shadow-inner flex-shrink-0 border border-purple-500/30"><i class="fas fa-robot"></i></div>
+            <div class="bg-slate-800/90 rounded-2xl p-3 shadow-sm border border-slate-700/80 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-lg shadow-inner flex-shrink-0 border border-purple-500/30"><i class="fas fa-robot"></i></div>
                     <div>
                         <h3 class="font-bold text-white text-xs sm:text-sm" id="txt_upgAutoTitle">Auto Tap Bot (+20/s)</h3>
                         <p class="text-[10px] text-slate-400 mt-0.5"><span id="txt_currLabel2">Cur:</span> <span class="font-bold text-slate-200" id="upgAutoCurrent">$0/s</span></p>
                         <p class="text-[10px] text-purple-400 font-bold"><span id="txt_nextLabel2">Next:</span> <span id="upgAutoNext">$20/s</span></p>
                     </div>
                 </div>
-                <div class="text-right flex items-center space-x-1.5">
+                <div class="text-right flex items-center space-x-1">
                     <div class="flex flex-col items-end mr-1"><span class="text-[9px] font-bold text-slate-400">Lv.<span id="upgAutoLv">0</span></span></div>
-                    <button id="btnUpgAuto" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-sm min-w-[65px]"><span id="upgAutoCost">$150</span></button>
-                    <button id="btnUpgAutoMax" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-2 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm cursor-pointer">MAX</button>
+                    <button id="btnUpgAuto" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm min-w-[60px]"><span id="upgAutoCost">$150</span></button>
+                    <button id="btnUpgAutoMax" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-1.5 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm cursor-pointer">MAX</button>
                 </div>
             </div>
 
-            <div class="bg-slate-800/90 rounded-2xl p-3.5 shadow-sm border border-slate-700/80 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-11 h-11 rounded-2xl bg-red-500/20 text-red-400 flex items-center justify-center text-xl shadow-inner flex-shrink-0 border border-red-500/30"><i class="fas fa-bolt"></i></div>
+            <div class="bg-slate-800/90 rounded-2xl p-3 shadow-sm border border-slate-700/80 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-red-500/20 text-red-400 flex items-center justify-center text-lg shadow-inner flex-shrink-0 border border-red-500/30"><i class="fas fa-bolt"></i></div>
                     <div>
                         <h3 class="font-bold text-white text-xs sm:text-sm" id="txt_upgFeverGaugeTitle">Fever Charge Rate</h3>
                         <p class="text-[10px] text-slate-400 mt-0.5"><span id="txt_currLabel3">Cur:</span> <span class="font-bold text-slate-200" id="upgFeverGaugeCurrent">+4%/tap</span></p>
                         <p class="text-[10px] text-red-400 font-bold"><span id="txt_nextLabel3">Next:</span> <span id="upgFeverGaugeNext">+5%/tap</span></p>
                     </div>
                 </div>
-                <div class="text-right flex items-center space-x-1.5">
+                <div class="text-right flex items-center space-x-1">
                     <div class="flex flex-col items-end mr-1"><span class="text-[9px] font-bold text-slate-400">Lv.<span id="upgFeverGaugeLv">0</span></span></div>
-                    <button id="btnUpgFeverGauge" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-sm min-w-[65px]"><span id="upgFeverGaugeCost">$1,000</span></button>
-                    <button id="btnUpgFeverGaugeMax" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-2 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm cursor-pointer">MAX</button>
+                    <button id="btnUpgFeverGauge" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1.5 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm min-w-[60px]"><span id="upgFeverGaugeCost">$1,000</span></button>
+                    <button id="btnUpgFeverGaugeMax" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-1.5 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm cursor-pointer">MAX</button>
                 </div>
             </div>
 
-            <div class="bg-slate-800/90 rounded-2xl p-3.5 shadow-sm border border-slate-700/80 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl shadow-inner flex-shrink-0 border border-amber-500/30"><i class="fas fa-fire"></i></div>
+            <div class="bg-slate-800/90 rounded-2xl p-3 shadow-sm border border-slate-700/80 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg shadow-inner flex-shrink-0 border border-amber-500/30"><i class="fas fa-fire"></i></div>
                     <div>
                         <h3 class="font-bold text-white text-xs sm:text-sm" id="txt_upgFeverMultiTitle">Fever Multiplier</h3>
                         <p class="text-[10px] text-slate-400 mt-0.5"><span id="txt_currLabel4">Cur:</span> <span class="font-bold text-slate-200" id="upgFeverMultiCurrent">5.0x</span></p>
                         <p class="text-[10px] text-amber-400 font-bold"><span id="txt_nextLabel4">Next:</span> <span id="upgFeverMultiNext">5.5x</span></p>
                     </div>
                 </div>
-                <div class="text-right flex items-center space-x-1.5">
+                <div class="text-right flex items-center space-x-1">
                     <div class="flex flex-col items-end mr-1"><span class="text-[9px] font-bold text-slate-400">Lv.<span id="upgFeverMultiLv">0</span></span></div>
-                    <button id="btnUpgFeverMulti" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-sm min-w-[65px]"><span id="upgFeverMultiCost">$25,000</span></button>
-                    <button id="btnUpgFeverMultiMax" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-2 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm cursor-pointer">MAX</button>
+                    <button id="btnUpgFeverMulti" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-1.5 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm min-w-[60px]"><span id="upgFeverMultiCost">$25,000</span></button>
+                    <button id="btnUpgFeverMultiMax" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-1.5 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm cursor-pointer">MAX</button>
                 </div>
             </div>
         </div>
@@ -346,6 +360,18 @@
                 <h2 class="text-xl font-black text-white" id="txt_flexHeader">Real Estate & FLEX</h2>
                 <p class="text-xs text-slate-400 mt-0.5" id="txt_flexSubHeader">Buy & sell assets for passive cash flow.</p>
             </div>
+
+            <!-- Total Real Estate Assets Summary Card -->
+            <div class="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-teal-950/90 rounded-2xl p-3.5 border border-emerald-500/40 shadow-lg flex justify-between items-center flex-shrink-0">
+                <div>
+                    <span class="text-[10px] font-bold text-emerald-300 uppercase tracking-wider block" id="txt_lblTotalRealEstate">Total Real Estate Assets</span>
+                    <span id="totalRealEstateValDisplay" class="font-black text-lg text-emerald-400 mt-0.5 block">$0</span>
+                </div>
+                <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl border border-emerald-500/30">
+                    <i class="fas fa-building"></i>
+                </div>
+            </div>
+
             <div id="flexList" class="space-y-3 pb-6 px-1"></div>
         </div>
 
@@ -356,7 +382,6 @@
                 <p class="text-xs text-slate-400 mt-0.5" id="txt_loanSubHeader">Borrow cash when needed. (Interest every 30s)</p>
             </div>
 
-            <!-- Current Loan Summary Card -->
             <div class="bg-gradient-to-br from-indigo-950 to-slate-900 rounded-2xl p-4 text-white shadow-md border border-indigo-700/60 space-y-3 flex-shrink-0">
                 <div class="flex justify-between items-center border-b border-indigo-800/80 pb-2">
                     <span class="text-xs font-bold text-indigo-300" id="txt_loanPrincipalLabel">Active Loan Principal</span>
@@ -376,7 +401,6 @@
                     <span id="txt_loanAvailLabel">Available Credit:</span>
                     <span id="loanRemainLimitDisplay" class="font-black text-white">$1,000,000</span>
                 </div>
-                <!-- 30s Exact Interest Due Box with Countdown Timer -->
                 <div class="bg-indigo-950/80 rounded-xl p-2 text-[10px] text-indigo-200 border border-indigo-800/80 flex justify-between items-center">
                     <span id="txt_loanExactInterestLabel">30s Interest Due:</span>
                     <div class="text-right flex items-center justify-end space-x-1.5">
@@ -401,9 +425,7 @@
                             </div>
                             <button id="btnBorrowInc" class="w-8 h-8 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black text-sm rounded-lg flex items-center justify-center transition-all shadow-sm cursor-pointer">+</button>
                         </div>
-                        <button id="btnBorrowAction" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs py-2.5 rounded-xl active:scale-95 transition-all shadow-md truncate cursor-pointer">
-                            Borrow
-                        </button>
+                        <button id="btnBorrowAction" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs py-2.5 rounded-xl active:scale-95 transition-all shadow-md truncate cursor-pointer">Borrow</button>
                     </div>
                 </div>
 
@@ -421,9 +443,7 @@
                             </div>
                             <button id="btnRepayInc" class="w-8 h-8 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-sm rounded-lg flex items-center justify-center transition-all shadow-sm cursor-pointer">+</button>
                         </div>
-                        <button id="btnRepayAction" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-2.5 rounded-xl active:scale-95 transition-all shadow-md truncate cursor-pointer">
-                            Repay
-                        </button>
+                        <button id="btnRepayAction" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-2.5 rounded-xl active:scale-95 transition-all shadow-md truncate cursor-pointer">Repay</button>
                     </div>
                 </div>
             </div>
@@ -449,9 +469,7 @@
                         <i class="fas fa-gem text-xl mr-1"></i><span id="prestigeGainEstimate">0</span>
                     </div>
                     <p class="text-[9px] text-slate-400 mb-3" id="txt_prestigeReqNote">* Requires min. $100,000,000 Net Worth to Rebirth.</p>
-                    <button id="btnDoPrestige" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-2.5 rounded-xl transition-all active:scale-95 shadow-md cursor-pointer">
-                        Execute Rebirth
-                    </button>
+                    <button id="btnDoPrestige" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-2.5 rounded-xl transition-all active:scale-95 shadow-md cursor-pointer">Execute Rebirth</button>
                 </div>
             </div>
 
@@ -464,7 +482,6 @@
         </div>
     </main>
 
-    <!-- Bottom Navigation Bar -->
     <nav class="flex-shrink-0 bg-slate-950/95 border-t border-slate-800 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] pb-safe relative">
         <div class="flex">
             <button class="nav-btn flex-1 py-2 flex flex-col items-center justify-center transition-colors text-amber-400 font-bold bg-amber-500/10" data-target="tab-work">
@@ -494,19 +511,35 @@
         </div>
     </nav>
 
-    <!-- Onboarding Tutorial Overlay -->
-    <div id="tutorialOverlay" class="fixed inset-0 z-[100] pointer-events-none hidden">
-        <div id="tutorialBox" class="absolute pointer-events-auto bg-amber-400 text-slate-950 px-4 py-3 rounded-2xl shadow-2xl font-black text-xs flex flex-col items-center space-y-1.5 animate-bounce-slow border-2 border-yellow-200 w-56 text-center transition-all duration-300">
-            <i id="tutorialArrow" class="fas fa-arrow-down text-lg text-slate-900"></i>
-            <span id="tutorialText">Tap here to earn money!</span>
-            <div class="flex items-center space-x-2 pt-1">
-                <button id="btnSkipTutorial" class="bg-slate-800 text-slate-300 text-[10px] px-2.5 py-1 rounded-lg font-bold hover:bg-slate-700 cursor-pointer">Skip</button>
-                <button id="btnNextTutorial" class="bg-slate-950 text-amber-300 text-[10px] px-3 py-1 rounded-lg font-black hover:bg-slate-900 cursor-pointer">Next &rarr;</button>
+    <!-- Interactive Onboarding Tutorial Overlay -->
+    <div id="tutorialOverlay" class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs hidden flex items-center justify-center p-4 transition-all duration-300">
+        <div id="tutorialBox" class="bg-gradient-to-br from-slate-900 to-amber-950 border-2 border-amber-400 text-white p-5 rounded-3xl shadow-2xl max-w-xs w-full text-center space-y-3 relative animate-bounce-slow">
+            <div class="w-12 h-12 bg-amber-400/20 text-amber-300 rounded-full flex items-center justify-center text-2xl mx-auto border border-amber-400/40">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div>
+                <span id="tutorialStepBadge" class="bg-amber-400 text-slate-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">Step 1 / 3</span>
+                <h3 id="tutorialTitle" class="font-black text-base text-amber-300 mt-1">Begin Your Empire</h3>
+                <p id="tutorialText" class="text-xs text-slate-200 mt-1 leading-relaxed">Tap the big CLICK button to earn your first cash investment!</p>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                <button id="btnSkipTutorial" class="bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer">Skip</button>
+                <button id="btnNextTutorial" class="bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs px-4 py-1.5 rounded-xl font-black shadow-md transition-all cursor-pointer">Next &rarr;</button>
             </div>
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- Achievements Modal -->
+    <div id="achievementsModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-slate-800 w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh] border border-slate-700">
+            <div class="bg-indigo-900 p-4 border-b border-indigo-700 flex justify-between items-center flex-shrink-0">
+                <h3 class="font-black text-base text-white flex items-center gap-1.5"><i class="fas fa-medal text-amber-300"></i><span id="txt_achievementsModalTitle">Visual Achievements</span></h3>
+                <button id="closeAchievementsModalBtn" class="text-slate-400 hover:text-white p-1 cursor-pointer"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <div id="achievementsListContainer" class="p-4 overflow-y-auto space-y-2.5 flex-1"></div>
+        </div>
+    </div>
+
     <!-- Borrow Confirm Modal -->
     <div id="borrowConfirmModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-slate-800 w-full max-w-xs rounded-3xl p-5 text-center space-y-4 shadow-2xl border border-slate-700">
@@ -532,6 +565,27 @@
         </div>
     </div>
 
+    <!-- Rebirth Confirm Modal -->
+    <div id="rebirthConfirmModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-slate-800 w-full max-w-xs rounded-3xl p-5 text-center space-y-4 shadow-2xl border border-slate-700">
+            <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-2xl mx-auto border border-emerald-500/30"><i class="fas fa-infinity"></i></div>
+            <div>
+                <h3 class="font-black text-lg text-white" id="txt_modalRebirthConfirmTitle">Confirm Rebirth</h3>
+                <p class="text-xs text-slate-400 mt-1" id="txt_modalRebirthConfirmDesc">Reset progress to earn Karma shards?</p>
+            </div>
+            <div class="bg-slate-900 p-3 rounded-2xl border border-slate-700 text-xs text-left space-y-1">
+                <div class="flex justify-between">
+                    <span class="text-slate-400 font-bold">Gain Karma Shards:</span>
+                    <span id="rebirthModalGain" class="font-black text-emerald-400">0</span>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="btnCancelRebirth" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs cursor-pointer">Cancel</button>
+                <button id="btnConfirmRebirth" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl active:scale-95 transition-all text-xs shadow-md cursor-pointer">Rebirth</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Settings Modal -->
     <div id="settingsModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-slate-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] border border-slate-700">
@@ -543,9 +597,7 @@
                 <div class="space-y-2 border-b border-slate-700 pb-4">
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-slate-200 text-xs flex items-center space-x-2"><i class="fas fa-globe text-amber-400"></i><span id="txt_langSettingLabel">Language / 언어</span></span>
-                        <button id="btnToggleLang" class="bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/40 text-xs px-3 py-1.5 rounded-xl font-extrabold active:scale-95 transition-all cursor-pointer">
-                            English 🇺🇸
-                        </button>
+                        <button id="btnToggleLang" class="bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/40 text-xs px-3 py-1.5 rounded-xl font-extrabold active:scale-95 transition-all cursor-pointer">English 🇺🇸</button>
                     </div>
                 </div>
                 <div class="space-y-2 border-b border-slate-700 pb-4">
@@ -667,7 +719,7 @@
         </div>
     </div>
 
-    <!-- Data Reset Modal -->
+    <!-- Reset Confirm Modal -->
     <div id="resetConfirmModal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-slate-800 w-full max-w-xs rounded-3xl p-5 text-center space-y-4 shadow-2xl border border-slate-700">
             <div class="w-14 h-14 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center text-2xl mx-auto border border-red-500/30"><i class="fas fa-triangle-exclamation"></i></div>
@@ -683,6 +735,12 @@
     </div>
 
     <script type="module">
+        // Firebase Direct REST API Configuration
+        const FIREBASE_API_KEY = "AIzaSyB1S4w_5o1I_hyne5yJLq1pDvUjGP-UX2I";
+        const FIREBASE_PROJECT_ID = "stock-tycoon-fca67";
+        const FIREBASE_REST_BASE = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+
+        // Global State
         let gameState = null;
         let pendingBorrowAmount = 0;
         let borrowRatio = 100;
@@ -692,312 +750,6 @@
         let stockChartInstance = null;
         let currentBgUrl = '';
         let isResetting = false;
-
-        // FIREBASE REST API BASE
-        const FIREBASE_REST_BASE = "https://firestore.googleapis.com/v1/projects/stock-tycoon-fca67/databases/(default)/documents";
-
-        // Particle Canvas Logic
-        const particleCanvas = document.getElementById('particleCanvas');
-        const pCtx = particleCanvas.getContext('2d');
-        let particles = [];
-
-        function resizeParticleCanvas() {
-            particleCanvas.width = window.innerWidth;
-            particleCanvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeParticleCanvas);
-        resizeParticleCanvas();
-
-        class CoinParticle {
-            constructor(x, y, isFever = false) {
-                this.x = x;
-                this.y = y;
-                this.size = isFever ? Math.random() * 24 + 18 : Math.random() * 18 + 14;
-                this.vx = (Math.random() - 0.5) * (isFever ? 18 : 12);
-                this.vy = (Math.random() - 0.7) * (isFever ? 20 : 14);
-                this.gravity = 0.5;
-                this.alpha = 1;
-                const feverSymbols = ['🔥', '⚡', '💥', '💰', '🪙', '✨'];
-                const normalSymbols = ['🪙', '💵', '💰', '✨'];
-                const symbols = isFever ? feverSymbols : normalSymbols;
-                this.symbol = symbols[Math.floor(Math.random() * symbols.length)];
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.vy += this.gravity;
-                this.alpha -= 0.02;
-            }
-            draw() {
-                pCtx.save();
-                pCtx.globalAlpha = Math.max(0, this.alpha);
-                pCtx.font = `${this.size}px sans-serif`;
-                pCtx.fillText(this.symbol, this.x, this.y);
-                pCtx.restore();
-            }
-        }
-
-        class FeverEmberParticle {
-            constructor() {
-                this.x = Math.random() * window.innerWidth;
-                this.y = window.innerHeight + 10;
-                this.size = Math.random() * 16 + 10;
-                this.vx = (Math.random() - 0.5) * 4;
-                this.vy = -(Math.random() * 5 + 3);
-                this.alpha = Math.random() * 0.8 + 0.2;
-                this.symbol = ['🔥', '✨', '⚡'][Math.floor(Math.random() * 3)];
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.alpha -= 0.015;
-            }
-            draw() {
-                pCtx.save();
-                pCtx.globalAlpha = Math.max(0, this.alpha);
-                pCtx.font = `${this.size}px sans-serif`;
-                pCtx.fillText(this.symbol, this.x, this.y);
-                pCtx.restore();
-            }
-        }
-
-        function spawnParticleBurst(x, y, isFever = false) {
-            const count = isFever ? 14 : 8;
-            for (let i = 0; i < count; i++) {
-                particles.push(new CoinParticle(x, y, isFever));
-            }
-        }
-
-        function animateParticles() {
-            pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
-            if (gameState && gameState.isFever && Math.random() < 0.4) {
-                particles.push(new FeverEmberParticle());
-            }
-
-            for (let i = particles.length - 1; i >= 0; i--) {
-                particles[i].update();
-                particles[i].draw();
-                if (particles[i].alpha <= 0) particles.splice(i, 1);
-            }
-            requestAnimationFrame(animateParticles);
-        }
-        animateParticles();
-
-        // Localization i18n
-        const i18n = {
-            en: {
-                appTitle: "Stock Tycoon",
-                leaderboardBtn: "Ranks",
-                hdrCash: "Cash",
-                hdrPortfolio: "Portfolio",
-                hdrNetWorth: "Net Worth",
-                hdrKarma: "💎 Karma (Prestige)",
-                newsBadge: "NEWS",
-                newsBadgeSession: "SESSION",
-                newsTickerStart: "Stock market trading session started.",
-                newsSessionTick: "[Session] Stock prices updated automatically.",
-                clickerMode: "CLICKER MODE",
-                tapTitle: "Tap to Earn Cash",
-                perTapLabel: "Per Tap",
-                rewardAdBtn: "Free 1 Random Stock (Watch Ad)",
-                lblAutoIncome: "Auto Income",
-                lblRentIncome: "Rental Income",
-                upgHeader: "Upgrades & Abilities",
-                upgSubHeader: "Boost tap earnings and fever multiplier!",
-                upgClickTitle: "Tap Power Boost",
-                upgAutoTitle: "Auto Tap Bot (+20/s)",
-                upgFeverGaugeTitle: "Fever Charge Rate",
-                upgFeverMultiTitle: "Fever Multiplier",
-                currLabel: "Cur:",
-                nextLabel: "Next:",
-                stockHeader: "Stock Market",
-                stockSubHeader: "Prices & dividends update every 10s.",
-                flexHeader: "Real Estate & FLEX",
-                flexSubHeader: "Buy & sell assets for passive cash flow.",
-                loanHeader: "Ant Loan Bank",
-                loanSubHeader: "Borrow cash when needed. (Interest every 30s)",
-                loanPrincipalLabel: "Active Loan Principal",
-                loanLimitLabel: "Credit Limit",
-                loanInterestLabel: "Interest / 30s",
-                loanAvailLabel: "Available Credit:",
-                loanExactInterestLabel: "30s Interest Due:",
-                borrowBoxTitle: "Borrow Cash",
-                borrowBoxDesc: "Set borrow ratio",
-                borrowBtnAction: "Borrow",
-                repayBoxTitle: "Repay Loan",
-                repayBoxDesc: "Set repayment ratio",
-                repayBtnAction: "Repay",
-                loanRankGuideTitle: "Loan Limits & Rates by Rank",
-                rebirthHeader: "Golden Spoon Rebirth",
-                rebirthSubHeader: "Reset progress to gain permanent power.",
-                prestigeEstLabel: "Est. Karma shards based on Net Worth",
-                prestigeReqNote: "* Requires min. $100,000,000 Net Worth to Rebirth.",
-                btnDoPrestige: "Execute Rebirth",
-                skillTreeTitle: "Permanent Perk Tree",
-                skillTreeSubTitle: "Spend Karma shards for permanent passive boosts.",
-                navWork: "Work",
-                navUpgrade: "Upgrades",
-                navStock: "Stocks",
-                navFlex: "Assets",
-                navLoan: "Bank",
-                navRebirth: "Rebirth",
-                modalBorrowConfirmTitle: "Confirm Loan",
-                modalBorrowConfirmDesc: "Are you sure you want to borrow?",
-                modalBorrowAmtLabel: "Loan Amount:",
-                modalBorrowIntLabel: "Interest / 30s:",
-                btnCancelBorrow: "Cancel",
-                btnConfirmBorrow: "Confirm",
-                settingsTitle: "Game Settings",
-                langSettingLabel: "Language / 언어",
-                bgmSettingLabel: "BGM Volume",
-                sfxSettingLabel: "SFX Volume",
-                nickSettingLabel: "Leaderboard Nickname",
-                resetSettingLabel: "Reset Progress",
-                tradeCurPrice: "Current Price",
-                tradeOwned: "Owned Shares",
-                tradeAvg: "Avg Price",
-                tradeProfit: "Profit Rate",
-                btnBuy1: "Buy 1 Share",
-                btnSell1: "Sell 1 Share",
-                btnBuyMax: "Buy MAX",
-                btnSellMax: "Sell ALL",
-                rankModalTitle: "Titles & Perks",
-                ldbTitle: "Global Leaderboard",
-                ldbSubTitle: "Top Investors Worldwide",
-                nickModalTitle: "Set Nickname",
-                nickModalDesc: "Enter your name for the global leaderboard.",
-                btnSubmitNickname: "Register",
-                resetModalTitle: "Delete Game Data",
-                resetModalDesc: "Are you sure you want to reset all progress?",
-                btnCancelReset: "Cancel",
-                btnConfirmReset: "Delete All",
-                tut1: "Tap here to earn money!",
-                tut2: "Buy your first stock!",
-                tut3: "Upgrade your click power!",
-                toastMove: "View",
-                dividendToast: "💰 Dividend Received",
-                interestToast: "💸 Interest Charged:",
-                loanCreditedToast: "✨ Loan credited to your account!",
-                loanRepaidToast: "💸 Loan Repaid:",
-                sharesUnit: "Sh",
-                sharesUnitFull: "Shares",
-                unowned: "0 Owned",
-                profitLabel: "Profit",
-                myEquityLabel: "My Net Equity (Excl. Loan)",
-                reqEquityLabel: "Req. Equity"
-            },
-            ko: {
-                appTitle: "주식 노가다 타이쿤",
-                leaderboardBtn: "랭킹",
-                hdrCash: "보유 현금",
-                hdrPortfolio: "주식 계좌",
-                hdrNetWorth: "총 자산",
-                hdrKarma: "💎 카르마 (환생 재화)",
-                newsBadge: "속보",
-                newsBadgeSession: "정규",
-                newsTickerStart: "증시 거래가 시작되었습니다.",
-                newsSessionTick: "[정규장] 주식 시세가 업데이트되었습니다.",
-                clickerMode: "노가다 모드",
-                tapTitle: "터치해서 돈 벌기",
-                perTapLabel: "터치당",
-                rewardAdBtn: "무료 주식 1주 뽑기 (광고 시청)",
-                lblAutoIncome: "초당 오토 수익",
-                lblRentIncome: "부동산 월세 수익",
-                upgHeader: "능력치 강화",
-                upgSubHeader: "수익 효율과 피버 모드를 크게 강화하세요!",
-                upgClickTitle: "터치 파워 강화",
-                upgAutoTitle: "오토 터치 봇 (+20/s)",
-                upgFeverGaugeTitle: "피버 게이지 충전량",
-                upgFeverMultiTitle: "피버 수익 배수",
-                currLabel: "현재:",
-                nextLabel: "다음:",
-                stockHeader: "주식 시장",
-                stockSubHeader: "10초마다 시세 변동 및 배당금이 지급됩니다.",
-                flexHeader: "부동산 & FLEX",
-                flexSubHeader: "자산을 사고팔아 수익을 최적화하세요.",
-                loanHeader: "개미 대출 은행",
-                loanSubHeader: "급전이 필요할 때 대출을 이용하세요. (30초마다 이자 발생)",
-                loanPrincipalLabel: "내 현재 대출 원금",
-                loanLimitLabel: "내 칭호 대출 한도",
-                loanInterestLabel: "30초당 이자율",
-                loanAvailLabel: "추가 대출 가능 한도:",
-                loanExactInterestLabel: "30초당 이자 금액:",
-                borrowBoxTitle: "대출 받기",
-                borrowBoxDesc: "남은 한도 기준 대출 비율 설정",
-                borrowBtnAction: "대출 받기",
-                repayBoxTitle: "대출 상환하기",
-                repayBoxDesc: "대출 원금 기준 상환 비율 설정",
-                repayBtnAction: "대출 상환",
-                loanRankGuideTitle: "칭호별 대출 우대 가이드",
-                rebirthHeader: "금수저 환생",
-                rebirthSubHeader: "모든 것을 초기화하고 영구적인 힘을 얻습니다.",
-                prestigeEstLabel: "현재 총 자산 기준 획득 가능한 재화",
-                prestigeReqNote: "* 환생을 위해선 최소 $100,000,000의 총 자산이 필요합니다.",
-                btnDoPrestige: "환생 실행하기",
-                skillTreeTitle: "영구 스킬 트리",
-                skillTreeSubTitle: "카르마를 소비하여 환생해도 유지되는 패시브를 강화합니다.",
-                navWork: "돈 벌기",
-                navUpgrade: "강화",
-                navStock: "주식거래",
-                navFlex: "부동산",
-                navLoan: "대출",
-                navRebirth: "환생",
-                modalBorrowConfirmTitle: "대출 실행 확인",
-                modalBorrowConfirmDesc: "선택하신 대출을 정말로 받으시겠습니까?",
-                modalBorrowAmtLabel: "대출 실행 금액:",
-                modalBorrowIntLabel: "30초당 예상 이율:",
-                btnCancelBorrow: "취소",
-                btnConfirmBorrow: "대출 실행",
-                settingsTitle: "게임 설정",
-                langSettingLabel: "Language / 언어",
-                bgmSettingLabel: "배경음악 (BGM)",
-                sfxSettingLabel: "효과음 (SFX)",
-                nickSettingLabel: "랭킹 닉네임",
-                resetSettingLabel: "데이터 초기화",
-                tradeCurPrice: "현재가",
-                tradeOwned: "보유 수량",
-                tradeAvg: "평균단가",
-                tradeProfit: "종목 수익률",
-                btnBuy1: "1주 매수",
-                btnSell1: "1주 매도",
-                btnBuyMax: "최대 매수",
-                btnSellMax: "전량 매도",
-                rankModalTitle: "🏆 칭호 컬렉션 & 보유효과",
-                ldbTitle: "실시간 랭킹 보드",
-                ldbSubTitle: "전 세계 개미 투자자 자산 순위",
-                nickModalTitle: "닉네임 설정",
-                nickModalDesc: "실시간 랭킹 보드에 표기될 닉네임을 입력하세요.",
-                btnSubmitNickname: "랭킹 등록하기",
-                resetModalTitle: "데이터 초기화",
-                resetModalDesc: "정말로 모든 게임 데이터를 삭제하시겠습니까?",
-                btnCancelReset: "취소",
-                btnConfirmReset: "모두 삭제",
-                tut1: "클릭해서 돈 벌기!",
-                tut2: "첫 주식 매수하기!",
-                tut3: "터치 파워 업그레이드!",
-                toastMove: "이동",
-                dividendToast: "💰 고배당주 분기 배당금 입금!",
-                interestToast: "💸 대출 이자 차감:",
-                loanCreditedToast: "✨ 대출금이 입금되었습니다!",
-                loanRepaidToast: "💸 대출금 상환 완료:",
-                sharesUnit: "주",
-                sharesUnitFull: "주",
-                unowned: "미보유",
-                profitLabel: "수익률",
-                myEquityLabel: "내 순자산 (대출 원금 제외)",
-                reqEquityLabel: "필요 순자산"
-            }
-        };
-
-        function t(key) {
-            const lang = (gameState && gameState.lang) ? gameState.lang : 'en';
-            return i18n[lang] ? (i18n[lang][key] || i18n['en'][key] || key) : key;
-        }
-
-        function setElementText(id, text) {
-            const el = document.getElementById(id);
-            if (el) el.textContent = text;
-        }
 
         function initDOMElements() {
             els = {
@@ -1047,6 +799,7 @@
                 marketTimer: document.getElementById('marketUpdateTimer'),
                 stockList: document.getElementById('stockList'),
                 flexList: document.getElementById('flexList'),
+                totalRealEstateValDisplay: document.getElementById('totalRealEstateValDisplay'),
                 loanBorrowedDisplay: document.getElementById('loanBorrowedDisplay'),
                 loanLimitDisplay: document.getElementById('loanLimitDisplay'),
                 loanInterestDisplay: document.getElementById('loanInterestDisplay'),
@@ -1072,6 +825,10 @@
                 borrowModalInterest: document.getElementById('borrowModalInterest'),
                 btnCancelBorrow: document.getElementById('btnCancelBorrow'),
                 btnConfirmBorrow: document.getElementById('btnConfirmBorrow'),
+                rebirthConfirmModal: document.getElementById('rebirthConfirmModal'),
+                rebirthModalGain: document.getElementById('rebirthModalGain'),
+                btnCancelRebirth: document.getElementById('btnCancelRebirth'),
+                btnConfirmRebirth: document.getElementById('btnConfirmRebirth'),
                 settingsModal: document.getElementById('settingsModal'),
                 btnOpenSettings: document.getElementById('btnOpenSettings'),
                 closeSettingsBtn: document.getElementById('closeSettingsBtn'),
@@ -1107,6 +864,10 @@
                 closeRankModalBtn: document.getElementById('closeRankModalBtn'),
                 rankDisplay: document.getElementById('rankDisplay'),
                 rankListContainer: document.getElementById('rankListContainer'),
+                achievementsModal: document.getElementById('achievementsModal'),
+                btnOpenAchievements: document.getElementById('btnOpenAchievements'),
+                closeAchievementsModalBtn: document.getElementById('closeAchievementsModalBtn'),
+                achievementsListContainer: document.getElementById('achievementsListContainer'),
                 leaderboardModal: document.getElementById('leaderboardModal'),
                 btnOpenLeaderboard: document.getElementById('btnOpenLeaderboard'),
                 closeLeaderboardBtn: document.getElementById('closeLeaderboardBtn'),
@@ -1114,10 +875,108 @@
                 nicknameModal: document.getElementById('nicknameModal'),
                 nicknameInput: document.getElementById('nicknameInput'),
                 btnSubmitNickname: document.getElementById('btnSubmitNickname'),
+                tutorialOverlay: document.getElementById('tutorialOverlay'),
+                tutorialStepBadge: document.getElementById('tutorialStepBadge'),
+                tutorialTitle: document.getElementById('tutorialTitle'),
+                tutorialText: document.getElementById('tutorialText'),
                 btnNextTutorial: document.getElementById('btnNextTutorial'),
                 btnSkipTutorial: document.getElementById('btnSkipTutorial')
             };
         }
+
+        // Particle Performance Limits
+        const MAX_PARTICLES = 35;
+        const MAX_FLOATING_TEXTS = 10;
+        let activeFloatingTexts = 0;
+
+        const particleCanvas = document.getElementById('particleCanvas');
+        const pCtx = particleCanvas.getContext('2d');
+        let particles = [];
+
+        function resizeParticleCanvas() {
+            particleCanvas.width = window.innerWidth;
+            particleCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeParticleCanvas);
+        resizeParticleCanvas();
+
+        class CoinParticle {
+            constructor(x, y, isFever = false) {
+                this.x = x;
+                this.y = y;
+                this.size = isFever ? Math.random() * 18 + 14 : Math.random() * 14 + 10;
+                this.vx = (Math.random() - 0.5) * (isFever ? 12 : 8);
+                this.vy = (Math.random() - 0.7) * (isFever ? 14 : 10);
+                this.gravity = 0.5;
+                this.alpha = 1;
+                const feverSymbols = ['🔥', '⚡', '💰', '🪙'];
+                const normalSymbols = ['🪙', '💵', '💰'];
+                const symbols = isFever ? feverSymbols : normalSymbols;
+                this.symbol = symbols[Math.floor(Math.random() * symbols.length)];
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.alpha -= 0.03;
+            }
+            draw() {
+                pCtx.save();
+                pCtx.globalAlpha = Math.max(0, this.alpha);
+                pCtx.font = `${this.size}px sans-serif`;
+                pCtx.fillText(this.symbol, this.x, this.y);
+                pCtx.restore();
+            }
+        }
+
+        class FeverEmberParticle {
+            constructor() {
+                this.x = Math.random() * window.innerWidth;
+                this.y = window.innerHeight + 10;
+                this.size = Math.random() * 14 + 8;
+                this.vx = (Math.random() - 0.5) * 3;
+                this.vy = -(Math.random() * 4 + 2);
+                this.alpha = Math.random() * 0.7 + 0.3;
+                this.symbol = ['🔥', '✨', '⚡'][Math.floor(Math.random() * 3)];
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= 0.02;
+            }
+            draw() {
+                pCtx.save();
+                pCtx.globalAlpha = Math.max(0, this.alpha);
+                pCtx.font = `${this.size}px sans-serif`;
+                pCtx.fillText(this.symbol, this.x, this.y);
+                pCtx.restore();
+            }
+        }
+
+        function spawnParticleBurst(x, y, isFever = false) {
+            if (particles.length >= MAX_PARTICLES) return;
+            const count = isFever ? 3 : 2;
+            for (let i = 0; i < count; i++) {
+                if (particles.length < MAX_PARTICLES) {
+                    particles.push(new CoinParticle(x, y, isFever));
+                }
+            }
+        }
+
+        function animateParticles() {
+            pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            if (gameState && gameState.isFever && particles.length < MAX_PARTICLES && Math.random() < 0.2) {
+                particles.push(new FeverEmberParticle());
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].alpha <= 0) particles.splice(i, 1);
+            }
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
 
         class AudioManager {
             constructor() {
@@ -1135,7 +994,7 @@
 
                     this.clickSynth = new Tone.MembraneSynth({
                         pitchDecay: 0.01, octaves: 2, oscillator: { type: "sine" },
-                        envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 }
+                        envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.08 }
                     }).toDestination();
 
                     this.buySynth = new Tone.PolySynth(Tone.Synth, {
@@ -1160,7 +1019,7 @@
                     this.updateVolumes();
                     this.startBGM();
                 } catch(e) {
-                    console.warn("Audio init bypassed:", e);
+                    console.warn("Audio init bypass:", e);
                 }
             }
 
@@ -1203,13 +1062,251 @@
 
         const audio = new AudioManager();
 
+        const achievementsList = [
+            { id: 'ach_100m', title: { en: 'First $100M', ko: '첫 1억 달성' }, desc: { en: 'Reach $100,000,000 Net Equity', ko: '순자산 $100,000,000 달성하기' }, icon: 'fa-sack-dollar', color: 'text-amber-400', bg: 'bg-amber-500/20' },
+            { id: 'ach_loss', title: { en: 'Cut Loss King', ko: '손절왕' }, desc: { en: 'Sell stock at a loss', ko: '손해를 보고 주식 매도하기' }, icon: 'fa-arrow-trend-down', color: 'text-cyan-400', bg: 'bg-cyan-500/20' },
+            { id: 'ach_re_mogul', title: { en: 'Real Estate Mogul', ko: '부동산 대지주' }, desc: { en: 'Own 10 or more real estate properties', ko: '부동산 자산 총 10개 이상 보유' }, icon: 'fa-building', color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
+            { id: 'ach_fever', title: { en: 'Fever Master', ko: '피버 마스터' }, desc: { en: 'Trigger Fever Mode 5 times', ko: '피버 모드 5회 발동시키기' }, icon: 'fa-fire', color: 'text-red-400', bg: 'bg-red-500/20' },
+            { id: 'ach_stock_whale', title: { en: 'Stock Whale', ko: '주식 거상' }, desc: { en: 'Own 1,000+ total shares of any stock', ko: '단일 종목 주식 1,000주 이상 보유' }, icon: 'fa-chart-pie', color: 'text-purple-400', bg: 'bg-purple-500/20' },
+            { id: 'ach_billion', title: { en: 'Billionaire Tycoon', ko: '지구 최고 재벌' }, desc: { en: 'Reach $1,000,000,000 Net Worth', ko: '총 자산 $1,000,000,000 달성하기' }, icon: 'fa-crown', color: 'text-yellow-300', bg: 'bg-yellow-500/20' }
+        ];
+
+        const i18n = {
+            en: {
+                appTitle: "Stock Tycoon",
+                achievementsBtn: "Badges",
+                leaderboardBtn: "Ranks",
+                hdrCash: "Cash",
+                hdrPortfolio: "Portfolio",
+                hdrNetWorth: "Net Worth",
+                hdrKarma: "💎 Karma (Prestige)",
+                newsBadge: "NEWS",
+                newsBadgeSession: "SESSION",
+                newsTickerStart: "Stock market trading session started.",
+                newsSessionTick: "[Session] Stock prices updated automatically.",
+                clickerMode: "CLICKER MODE",
+                tapTitle: "Tap to Earn Cash",
+                perTapLabel: "Per Tap",
+                rewardAdBtn: "Free 1 Random Stock (Watch Ad)",
+                lblAutoIncome: "Auto Income",
+                lblRentIncome: "Rental Income",
+                upgHeader: "Upgrades & Abilities",
+                upgSubHeader: "Boost tap earnings and fever multiplier!",
+                upgClickTitle: "Tap Power Boost",
+                upgAutoTitle: "Auto Tap Bot (+20/s)",
+                upgFeverGaugeTitle: "Fever Charge Rate",
+                upgFeverMultiTitle: "Fever Multiplier",
+                currLabel: "Cur:",
+                nextLabel: "Next:",
+                stockHeader: "Stock Market",
+                stockSubHeader: "Prices & dividends update every 10s.",
+                flexHeader: "Real Estate & FLEX",
+                flexSubHeader: "Buy & sell assets for passive cash flow.",
+                lblTotalRealEstate: "Total Real Estate Assets",
+                loanHeader: "Ant Loan Bank",
+                loanSubHeader: "Borrow cash when needed. (Interest every 30s)",
+                loanPrincipalLabel: "Active Loan Principal",
+                loanLimitLabel: "Credit Limit",
+                loanInterestLabel: "Interest / 30s",
+                loanAvailLabel: "Available Credit:",
+                loanExactInterestLabel: "30s Interest Due:",
+                borrowBoxTitle: "Borrow Cash",
+                borrowBoxDesc: "Set borrow ratio",
+                borrowBtnAction: "Borrow",
+                repayBoxTitle: "Repay Loan",
+                repayBoxDesc: "Set repayment ratio",
+                repayBtnAction: "Repay",
+                loanRankGuideTitle: "Loan Limits & Rates by Rank",
+                rebirthHeader: "Golden Spoon Rebirth",
+                rebirthSubHeader: "Reset progress to gain permanent power.",
+                prestigeEstLabel: "Est. Karma shards based on Net Worth",
+                prestigeReqNote: "* Requires min. $100,000,000 Net Worth to Rebirth.",
+                btnDoPrestige: "Execute Rebirth",
+                skillTreeTitle: "Permanent Perk Tree",
+                skillTreeSubTitle: "Spend Karma shards for permanent passive boosts.",
+                navWork: "Work",
+                navUpgrade: "Upgrades",
+                navStock: "Stocks",
+                navFlex: "Assets",
+                navLoan: "Bank",
+                navRebirth: "Rebirth",
+                modalBorrowConfirmTitle: "Confirm Loan",
+                modalBorrowConfirmDesc: "Are you sure you want to borrow?",
+                modalBorrowAmtLabel: "Loan Amount:",
+                modalBorrowIntLabel: "Interest / 30s:",
+                btnCancelBorrow: "Cancel",
+                btnConfirmBorrow: "Confirm",
+                settingsTitle: "Game Settings",
+                langSettingLabel: "Language / 언어",
+                bgmSettingLabel: "BGM Volume",
+                sfxSettingLabel: "SFX Volume",
+                nickSettingLabel: "Leaderboard Nickname",
+                resetSettingLabel: "Reset Progress",
+                tradeCurPrice: "Current Price",
+                tradeOwned: "Owned Shares",
+                tradeAvg: "Avg Price",
+                tradeProfit: "Profit Rate",
+                btnBuy1: "Buy 1 Share",
+                btnSell1: "Sell 1 Share",
+                btnBuyMax: "Buy MAX",
+                btnSellMax: "Sell ALL",
+                rankModalTitle: "Titles & Perks",
+                achievementsModalTitle: "Visual Badges & Trophies",
+                ldbTitle: "Global Leaderboard",
+                ldbSubTitle: "Top Investors Worldwide",
+                nickModalTitle: "Set Nickname",
+                nickModalDesc: "Enter your name for the global leaderboard.",
+                btnSubmitNickname: "Register",
+                resetModalTitle: "Delete Game Data",
+                resetModalDesc: "Are you sure you want to reset all progress?",
+                btnCancelReset: "Cancel",
+                btnConfirmReset: "Delete All",
+                tut1Title: "Begin Your Empire",
+                tut1Desc: "Tap the big CLICK button to earn your starting cash capital.",
+                tut2Title: "Boost Power & Abilities",
+                tut2Desc: "Use earned cash in the Upgrades tab to boost click power and hire Auto Tap Bots.",
+                tut3Title: "Trade Stocks & Flex Assets",
+                tut3Desc: "Buy low and sell high in the Stock Market, leverage Loans, and accumulate Real Estate assets!",
+                toastMove: "View",
+                dividendToast: "💰 Dividend Received",
+                interestToast: "💸 Interest Charged:",
+                loanCreditedToast: "✨ Loan credited to your account!",
+                loanRepaidToast: "💸 Loan Repaid:",
+                sharesUnit: "Sh",
+                sharesUnitFull: "Shares",
+                unowned: "0 Owned",
+                profitLabel: "Profit",
+                myEquityLabel: "My Net Equity (Excl. Loan)",
+                reqEquityLabel: "Req. Equity",
+                achUnlockedToast: "🏆 Achievement Unlocked: "
+            },
+            ko: {
+                appTitle: "주식 노가다 타이쿤",
+                achievementsBtn: "뱃지 업적",
+                leaderboardBtn: "랭킹",
+                hdrCash: "보유 현금",
+                hdrPortfolio: "주식 계좌",
+                hdrNetWorth: "총 자산",
+                hdrKarma: "💎 카르마 (환생 재화)",
+                newsBadge: "속보",
+                newsBadgeSession: "정규",
+                newsTickerStart: "증시 거래가 시작되었습니다.",
+                newsSessionTick: "[정규장] 주식 시세가 업데이트되었습니다.",
+                clickerMode: "노가다 모드",
+                tapTitle: "터치해서 돈 벌기",
+                perTapLabel: "터치당",
+                rewardAdBtn: "무료 주식 1주 뽑기 (광고 시청)",
+                lblAutoIncome: "초당 오토 수익",
+                lblRentIncome: "부동산 월세 수익",
+                upgHeader: "능력치 강화",
+                upgSubHeader: "수익 효율과 피버 모드를 크게 강화하세요!",
+                upgClickTitle: "터치 파워 강화",
+                upgAutoTitle: "오토 터치 봇 (+20/s)",
+                upgFeverGaugeTitle: "피버 게이지 충전량",
+                upgFeverMultiTitle: "피버 수익 배수",
+                currLabel: "현재:",
+                nextLabel: "다음:",
+                stockHeader: "주식 시장",
+                stockSubHeader: "10초마다 시세 변동 및 배당금이 지급됩니다.",
+                flexHeader: "부동산 & FLEX",
+                flexSubHeader: "자산을 사고팔아 수익을 최적화하세요.",
+                lblTotalRealEstate: "총 부동산 자산",
+                loanHeader: "개미 대출 은행",
+                loanSubHeader: "급전이 필요할 때 대출을 이용하세요. (30초마다 이자 발생)",
+                loanPrincipalLabel: "내 현재 대출 원금",
+                loanLimitLabel: "내 칭호 대출 한도",
+                loanInterestLabel: "30초당 이자율",
+                loanAvailLabel: "추가 대출 가능 한도:",
+                loanExactInterestLabel: "30초당 이자 금액:",
+                borrowBoxTitle: "대출 받기",
+                borrowBoxDesc: "남은 한도 기준 대출 비율 설정",
+                borrowBtnAction: "대출 받기",
+                repayBoxTitle: "대출 상환하기",
+                repayBoxDesc: "대출 원금 기준 상환 비율 설정",
+                repayBtnAction: "대출 상환",
+                loanRankGuideTitle: "칭호별 대출 우대 가이드",
+                rebirthHeader: "금수저 환생",
+                rebirthSubHeader: "모든 것을 초기화하고 영구적인 힘을 얻습니다.",
+                prestigeEstLabel: "현재 총 자산 기준 획득 가능한 재화",
+                prestigeReqNote: "* 환생을 위해선 최소 $100,000,000의 총 자산이 필요합니다.",
+                btnDoPrestige: "환생 실행하기",
+                skillTreeTitle: "영구 스킬 트리",
+                skillTreeSubTitle: "카르마를 소비하여 환생해도 유지되는 패시브를 강화합니다.",
+                navWork: "돈 벌기",
+                navUpgrade: "강화",
+                navStock: "주식거래",
+                navFlex: "부동산",
+                navLoan: "대출",
+                navRebirth: "환생",
+                modalBorrowConfirmTitle: "대출 실행 확인",
+                modalBorrowConfirmDesc: "선택하신 대출을 정말로 받으시겠습니까?",
+                modalBorrowAmtLabel: "대출 실행 금액:",
+                modalBorrowIntLabel: "30초당 예상 이율:",
+                btnCancelBorrow: "취소",
+                btnConfirmBorrow: "대출 실행",
+                settingsTitle: "게임 설정",
+                langSettingLabel: "Language / 언어",
+                bgmSettingLabel: "배경음악 (BGM)",
+                sfxSettingLabel: "효과음 (SFX)",
+                nickSettingLabel: "랭킹 닉네임",
+                resetSettingLabel: "데이터 초기화",
+                tradeCurPrice: "현재가",
+                tradeOwned: "보유 수량",
+                tradeAvg: "평균단가",
+                tradeProfit: "종목 수익률",
+                btnBuy1: "1주 매수",
+                btnSell1: "1주 매도",
+                btnBuyMax: "최대 매수",
+                btnSellMax: "전량 매도",
+                rankModalTitle: "🏆 칭호 컬렉션 & 보유효과",
+                achievementsModalTitle: "🏆 시각적 뱃지 업적",
+                ldbTitle: "실시간 글로벌 랭킹",
+                ldbSubTitle: "전 세계 개미 투자자 자산 순위",
+                nickModalTitle: "닉네임 설정",
+                nickModalDesc: "실시간 랭킹 보드에 표기될 닉네임을 입력하세요.",
+                btnSubmitNickname: "랭킹 등록하기",
+                resetModalTitle: "데이터 초기화",
+                resetModalDesc: "정말로 모든 게임 데이터를 삭제하시겠습니까?",
+                btnCancelReset: "취소",
+                btnConfirmReset: "모두 삭제",
+                tut1Title: "클릭해서 첫 자금을 버세요!",
+                tut1Desc: "중앙의 큰 CLICK 버튼을 터치하여 초기 투자 자금을 마련하세요.",
+                tut2Title: "능력치를 강화하세요!",
+                tut2Desc: "모은 돈으로 터치 파워를 올리거나 오토 봇을 고용하여 더 빨리 돈을 버세요.",
+                tut3Title: "주식과 부동산에 투자하세요!",
+                tut3Desc: "10초마다 움직이는 주식 시장에서 싸게 사서 패닉바잉하고, 부동산으로 건물주가 되어보세요!",
+                toastMove: "이동",
+                dividendToast: "💰 고배당주 분기 배당금 입금!",
+                interestToast: "💸 대출 이자 차감:",
+                loanCreditedToast: "✨ 대출금이 입금되었습니다!",
+                loanRepaidToast: "💸 대출금 상환 완료:",
+                sharesUnit: "주",
+                sharesUnitFull: "주",
+                unowned: "미보유",
+                profitLabel: "수익률",
+                myEquityLabel: "내 순자산 (대출 원금 제외)",
+                reqEquityLabel: "필요 순자산",
+                achUnlockedToast: "🏆 업적 달성: "
+            }
+        };
+
+        function t(key) {
+            const lang = (gameState && gameState.lang) ? gameState.lang : 'en';
+            return i18n[lang] ? (i18n[lang][key] || i18n['en'][key] || key) : key;
+        }
+
+        function setElementText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        }
+
         const getInitialGameState = () => ({
             cash: 0,
             borrowedAmount: 0,
             clickPower: 10,
             autoPower: 0,
             realEstatePower: 0,
-            lang: 'en',
+            lang: 'en', // DEFAULT: ENGLISH
             tutorialStep: 0,
             tutorialCompleted: false,
             clickUpg: { level: 0, baseCost: 50, growth: 1.45, powerBase: 10, powerGrowth: 10 },
@@ -1219,10 +1316,12 @@
             updateTimer: 10,
             loanTimer: 30,
             feverGauge: 0,
+            feverCount: 0,
             isFever: false,
             nickname: '',
             userId: 'user_' + Math.random().toString(36).substring(2, 10),
             karma: 0,
+            unlockedAchievements: {},
             skills: {
                 incomeMulti: { level: 0, maxLevel: 50, baseCost: 10, costGrowth: 1.3, effectBase: 0, effectGrowth: 0.1, desc: { en: "Global Income Multiplier (Tap/Auto/Rent)", ko: "전체 수익 증가 (터치/오토/월세)" }, format: "%" },
                 realEstateDiscount: { level: 0, maxLevel: 10, baseCost: 20, costGrowth: 1.5, effectBase: 0, effectGrowth: 0.05, desc: { en: "Real Estate Purchase Discount", ko: "부동산 구매 비용 할인" }, format: "%" },
@@ -1233,7 +1332,7 @@
             stocks: [
                 { id: 'stk_01', name: { en: 'Samsung Tech', ko: '삼숭전자' }, price: 500, owned: 0, avgPrice: 0, history: [], icon: 'fa-microchip', color: 'text-blue-400', bg: 'bg-blue-500/20', type: 'normal', badge: { en: 'Tier 1', ko: '1대장' } },
                 { id: 'stk_02', name: { en: 'Samsung 3X Bull', ko: '삼숭 3X 레버리지' }, price: 200000, owned: 0, avgPrice: 0, history: [], icon: 'fa-rocket', color: 'text-red-400', bg: 'bg-red-500/20', type: 'leverage', badge: { en: 'High Risk 3X', ko: '고위험 3X' }, targetId: 'stk_01' },
-                { id: 'stk_03', name: { en: 'Samsung -3X Bear', ko: '삼숭 -3X 인버스' }, price: 200000, owned: 0, avgPrice: 0, history: [], icon: 'fa-arrow-trend-down', color: 'text-cyan-400', bg: 'bg-cyan-500/20', type: 'inverse', badge: { en: 'Inverse -3X', ko: '인버스 -3X' }, targetId: 'stk_01' },
+                { id: 'stk_03', name: { en: 'Samsung -1X Bear', ko: '삼숭 -1X 인버스' }, price: 200000, owned: 0, avgPrice: 0, history: [], icon: 'fa-arrow-trend-down', color: 'text-cyan-400', bg: 'bg-cyan-500/20', type: 'inverse', badge: { en: 'Inverse -1X', ko: '인버스 -1X' }, targetId: 'stk_01' },
                 { id: 'stk_04', name: { en: 'KOSDAQ 150 ETF', ko: '코스닥 150 ETF' }, price: 200000, owned: 0, avgPrice: 0, history: [], icon: 'fa-chart-pie', color: 'text-emerald-400', bg: 'bg-emerald-500/20', type: 'etf', badge: { en: 'Growth ETF', ko: '우상향 ETF' } },
                 { id: 'stk_05', name: { en: 'KOSPI 200 ETF', ko: '코스피 200 ETF' }, price: 500000, owned: 0, avgPrice: 0, history: [], icon: 'fa-chart-area', color: 'text-indigo-400', bg: 'bg-indigo-500/20', type: 'etf', badge: { en: 'Index ETF', ko: '우상향 ETF' } },
                 { id: 'stk_06', name: { en: 'High Dividend Bank', ko: '고배당 금융주' }, price: 80000, owned: 0, avgPrice: 0, history: [], icon: 'fa-building-columns', color: 'text-amber-400', bg: 'bg-amber-500/20', type: 'dividend', badge: { en: 'Dividend 0.5%', ko: '배당주 0.5%' } },
@@ -1265,40 +1364,76 @@
             { min: 10000000000000, title: { en: '🌌 Galactic Tycoon', ko: '🌌 지구 최고 재벌' }, clickBuff: 10.0, reBuff: 2.5, bgUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=80', loanLimit: 500000000000000, loanInterest: 0.01 }
         ];
 
+        function checkAchievements() {
+            if (!gameState) return;
+            const equity = getEquity();
+            const totalWorth = getTotalAsset();
+            const totalRealEstateOwned = gameState.realEstate.reduce((sum, re) => sum + re.owned, 0);
+            const maxSingleStockOwned = Math.max(...gameState.stocks.map(s => s.owned), 0);
+
+            if (equity >= 100000000) unlockAchievement('ach_100m');
+            if (totalWorth >= 1000000000) unlockAchievement('ach_billion');
+            if (totalRealEstateOwned >= 10) unlockAchievement('ach_re_mogul');
+            if (maxSingleStockOwned >= 1000) unlockAchievement('ach_stock_whale');
+            if (gameState.feverCount >= 5) unlockAchievement('ach_fever');
+        }
+
+        function unlockAchievement(id) {
+            if (!gameState || gameState.unlockedAchievements[id]) return;
+            gameState.unlockedAchievements[id] = true;
+            const ach = achievementsList.find(a => a.id === id);
+            if (ach) {
+                audio.playNewsGood();
+                const achTitle = typeof ach.title === 'object' ? ach.title[gameState.lang] : ach.title;
+                showNewsToast(`${t('achUnlockedToast')} ${achTitle}`, true, false);
+            }
+            saveGame();
+        }
+
+        function renderAchievementsList() {
+            if (!els.achievementsListContainer) return;
+            els.achievementsListContainer.innerHTML = '';
+
+            achievementsList.forEach(ach => {
+                const isUnlocked = !!gameState.unlockedAchievements[ach.id];
+                const achTitle = typeof ach.title === 'object' ? ach.title[gameState.lang] : ach.title;
+                const achDesc = typeof ach.desc === 'object' ? ach.desc[gameState.lang] : ach.desc;
+
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-2xl border flex items-center justify-between ${isUnlocked ? 'bg-indigo-950/80 border-amber-400/60' : 'bg-slate-900/80 border-slate-800 opacity-50'}`;
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-2xl ${ach.bg} ${ach.color} flex items-center justify-center text-lg flex-shrink-0 border border-slate-700">
+                            <i class="fas ${ach.icon}"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs ${isUnlocked ? 'text-amber-300' : 'text-slate-400'}">${achTitle} ${isUnlocked ? '🌟' : '🔒'}</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${achDesc}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-black ${isUnlocked ? 'text-emerald-400' : 'text-slate-600'}">${isUnlocked ? 'CLEARED' : 'LOCKED'}</span>
+                `;
+                els.achievementsListContainer.appendChild(div);
+            });
+        }
+
         function watchAdForStockReward() {
             audio.init();
-            
             if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.ad) {
-                console.log("CrazyGames Rewarded Ad Requested");
-                
                 window.CrazyGames.SDK.ad.requestAd("rewarded", {
                     adStarted: () => {
-                        try {
-                            if (Tone.Transport && Tone.Transport.state === "started") {
-                                Tone.Transport.pause();
-                            }
-                        } catch(e){}
+                        try { if (Tone.Transport && Tone.Transport.state === "started") Tone.Transport.pause(); } catch(e){}
                     },
                     adFinished: () => {
-                        try {
-                            if (Tone.Transport && Tone.Transport.state === "paused") {
-                                Tone.Transport.start();
-                            }
-                        } catch(e){}
+                        try { if (Tone.Transport && Tone.Transport.state === "paused") Tone.Transport.start(); } catch(e){}
                         grantRandomStockReward();
                     },
                     adError: (error) => {
-                        try {
-                            if (Tone.Transport && Tone.Transport.state === "paused") {
-                                Tone.Transport.start();
-                            }
-                        } catch(e){}
-                        console.warn("CrazyGames Ad Error/Dismissed:", error);
+                        try { if (Tone.Transport && Tone.Transport.state === "paused") Tone.Transport.start(); } catch(e){}
                         showNewsToast(gameState.lang === 'ko' ? "⚠️ 광고 시청이 완료되어야 보상이 지급됩니다." : "⚠️ Finish watching the ad to get the reward.", false, false);
                     }
                 });
             } else {
-                console.log("Local preview ad fallback triggered");
                 grantRandomStockReward();
             }
         }
@@ -1315,7 +1450,6 @@
             showNewsToast(`🎉 +1 ${stockName} Stock Granted!`, true, false);
         }
 
-        // Large Number Abbreviation Formatter (>= 1 Billion / 10억)
         function formatCurrency(num) { 
             if (num === undefined || num === null || isNaN(num)) return '$0';
             const isNeg = num < 0;
@@ -1335,50 +1469,38 @@
             };
 
             if (lang === 'ko') {
-                if (absVal >= 1e16) {
-                    valStr = formatNumberWithUnit(absVal, 1e16, '경');
-                } else if (absVal >= 1e12) {
-                    valStr = formatNumberWithUnit(absVal, 1e12, '조');
-                } else {
-                    valStr = formatNumberWithUnit(absVal, 1e8, '억');
-                }
+                if (absVal >= 1e16) valStr = formatNumberWithUnit(absVal, 1e16, '경');
+                else if (absVal >= 1e12) valStr = formatNumberWithUnit(absVal, 1e12, '조');
+                else valStr = formatNumberWithUnit(absVal, 1e8, '억');
             } else {
-                if (absVal >= 1e24) {
-                    valStr = formatNumberWithUnit(absVal, 1e24, 'Sp');
-                } else if (absVal >= 1e21) {
-                    valStr = formatNumberWithUnit(absVal, 1e21, 'Sx');
-                } else if (absVal >= 1e18) {
-                    valStr = formatNumberWithUnit(absVal, 1e18, 'Qi');
-                } else if (absVal >= 1e15) {
-                    valStr = formatNumberWithUnit(absVal, 1e15, 'Qa');
-                } else if (absVal >= 1e12) {
-                    valStr = formatNumberWithUnit(absVal, 1e12, 'T');
-                } else {
-                    valStr = formatNumberWithUnit(absVal, 1e9, 'B');
-                }
+                if (absVal >= 1e24) valStr = formatNumberWithUnit(absVal, 1e24, 'Sp');
+                else if (absVal >= 1e21) valStr = formatNumberWithUnit(absVal, 1e21, 'Sx');
+                else if (absVal >= 1e18) valStr = formatNumberWithUnit(absVal, 1e18, 'Qi');
+                else if (absVal >= 1e15) valStr = formatNumberWithUnit(absVal, 1e15, 'Qa');
+                else if (absVal >= 1e12) valStr = formatNumberWithUnit(absVal, 1e12, 'T');
+                else valStr = formatNumberWithUnit(absVal, 1e9, 'B');
             }
 
             return isNeg ? `-$${valStr}` : `$${valStr}`;
         }
 
-        // Net Worth = Cash + Stock Portfolio + Real Estate
         function getTotalAsset() {
             let stockVal = 0;
             gameState.stocks.forEach(stock => {
-                if (stock.owned > 0) {
-                    stockVal += Math.floor(stock.price * stock.owned);
-                }
+                if (stock.owned > 0) stockVal += Math.floor(stock.price * stock.owned);
             });
             const realEstateVal = gameState.realEstate.reduce((acc, re) => acc + Math.floor(re.cost * re.owned), 0);
             return gameState.cash + stockVal + realEstateVal;
         }
 
-        // Net Equity = Net Worth - Borrowed Loan
+        function getTotalRealEstateValue() {
+            return gameState.realEstate.reduce((acc, re) => acc + Math.floor(re.cost * re.owned), 0);
+        }
+
         function getEquity() {
             return getTotalAsset() - (gameState.borrowedAmount || 0);
         }
 
-        // Rank Unlock Check using Net Equity
         function getCurrentRankObj() {
             const equity = getEquity();
             let current = ranks[0];
@@ -1417,6 +1539,7 @@
             const lang = gameState.lang;
             
             setElementText('txt_appTitle', t('appTitle'));
+            setElementText('txt_achievementsBtn', t('achievementsBtn'));
             setElementText('txt_leaderboardBtn', t('leaderboardBtn'));
             setElementText('txt_hdrCash', t('hdrCash'));
             setElementText('txt_hdrPortfolio', t('hdrPortfolio'));
@@ -1465,6 +1588,7 @@
             setElementText('txt_stockSubHeader', t('stockSubHeader'));
             setElementText('txt_flexHeader', t('flexHeader'));
             setElementText('txt_flexSubHeader', t('flexSubHeader'));
+            setElementText('txt_lblTotalRealEstate', t('lblTotalRealEstate'));
 
             setElementText('txt_loanHeader', t('loanHeader'));
             setElementText('txt_loanSubHeader', t('loanSubHeader'));
@@ -1512,6 +1636,7 @@
             setElementText('txt_nickSettingLabel', t('nickSettingLabel'));
             setElementText('txt_resetSettingLabel', t('resetSettingLabel'));
             setElementText('txt_rankModalTitle', t('rankModalTitle'));
+            setElementText('txt_achievementsModalTitle', t('achievementsModalTitle'));
             setElementText('txt_ldbTitle', t('ldbTitle'));
             setElementText('txt_ldbSubTitle', t('ldbSubTitle'));
             setElementText('txt_nickModalTitle', t('nickModalTitle'));
@@ -1564,6 +1689,9 @@
         function triggerFever() {
             gameState.isFever = true;
             gameState.feverGauge = 100;
+            gameState.feverCount = (gameState.feverCount || 0) + 1;
+            checkAchievements();
+
             const feverMultiplier = (gameState.feverMultiUpg.powerBase + (gameState.feverMultiUpg.level * gameState.feverMultiUpg.powerGrowth) + getSkillEffect('feverBonus')).toFixed(1);
 
             if (els.feverBar) els.feverBar.className = "bg-gradient-to-r from-red-500 via-yellow-400 to-red-600 h-full rounded-full transition-all duration-75 w-full animate-pulse";
@@ -1572,7 +1700,7 @@
                 els.feverText.className = "absolute inset-0 flex items-center justify-center text-[10px] font-black text-white drop-shadow animate-bounce";
             }
             if (els.workBtn) els.workBtn.classList.add("fever-btn-active", "ring-8", "ring-red-500");
-            if (els.workBtnIcon) els.workBtnIcon.className = "fas fa-fire text-6xl text-yellow-300 mb-2 drop-shadow-lg animate-bounce";
+            if (els.workBtnIcon) els.workBtnIcon.className = "fas fa-fire text-5xl text-yellow-300 mb-2 drop-shadow-lg animate-bounce";
 
             let feverTimeLeft = 7;
             const feverInterval = setInterval(() => {
@@ -1593,7 +1721,7 @@
                         els.feverText.className = "absolute inset-0 flex items-center justify-center text-[10px] font-black text-slate-200 drop-shadow";
                     }
                     if (els.workBtn) els.workBtn.classList.remove("fever-btn-active", "ring-8", "ring-red-500");
-                    if (els.workBtnIcon) els.workBtnIcon.className = "fas fa-hand-pointer text-5xl text-white mb-2 drop-shadow-lg";
+                    if (els.workBtnIcon) els.workBtnIcon.className = "fas fa-hand-pointer text-4xl sm:text-5xl text-white mb-2 drop-shadow-lg";
                     updateDisplays();
                 }
             }, 100);
@@ -1604,7 +1732,9 @@
             const feverMultiplier = gameState.feverMultiUpg.powerBase + (gameState.feverMultiUpg.level * gameState.feverMultiUpg.powerGrowth) + getSkillEffect('feverBonus');
             const gain = gameState.isFever ? Math.round(gameState.clickPower * feverMultiplier) : gameState.clickPower;
             gameState.cash += gain;
-            handleFeverIncrement(); updateDisplays();
+            handleFeverIncrement(); 
+            updateDisplays();
+            checkAchievements();
 
             let x = e ? e.clientX : window.innerWidth / 2;
             let y = e ? e.clientY : window.innerHeight / 2;
@@ -1618,13 +1748,12 @@
                 void els.workBtn.offsetWidth;
                 els.workBtn.classList.add('fever-tap-shake');
             }
-
-            if (!gameState.tutorialCompleted && gameState.tutorialStep === 0) {
-                nextTutorialStep();
-            }
         }
 
         function showClickEffect(x, y, amount) {
+            if (activeFloatingTexts >= MAX_FLOATING_TEXTS) return;
+            activeFloatingTexts++;
+
             const effect = document.createElement('div');
             effect.className = 'click-text';
             effect.textContent = `+${formatCurrency(amount)}`;
@@ -1635,7 +1764,10 @@
                 effect.style.left = `${rect.left + rect.width / 2 - 20}px`; effect.style.top = `${rect.top + rect.height / 2 - 20}px`;
             }
             document.body.appendChild(effect);
-            setTimeout(() => { if (document.body.contains(effect)) document.body.removeChild(effect); }, 700);
+            setTimeout(() => { 
+                if (document.body.contains(effect)) document.body.removeChild(effect); 
+                activeFloatingTexts = Math.max(0, activeFloatingTexts - 1);
+            }, 600);
         }
 
         function processMarketTick(newsEvent = null) {
@@ -1682,6 +1814,7 @@
                 }
             });
 
+            // Samsung Base stock differential logic for 3X Bull & -1X Bear
             const baseStock = gameState.stocks.find(s => s.id === 'stk_01');
             if (baseStock && baseStock.history.length > 0) {
                 const prevBase = baseStock.history[baseStock.history.length - 1];
@@ -1698,7 +1831,7 @@
                 if (inverseStock) {
                     inverseStock.history.push(inverseStock.price);
                     if (inverseStock.history.length > 10) inverseStock.history.shift();
-                    inverseStock.price = Math.max(1, Math.round(inverseStock.price * (1 - (baseDiffRatio * 3))));
+                    inverseStock.price = Math.max(1, Math.round(inverseStock.price * (1 - (baseDiffRatio * 1))));
                 }
             }
 
@@ -1748,9 +1881,7 @@
             const textContent = selected[gameState.lang] || selected['en'];
             const fullText = `${textContent} (${updatedStock.newsTag})`;
             
-            if (els.newsTicker) {
-                els.newsTicker.textContent = fullText;
-            }
+            if (els.newsTicker) els.newsTicker.textContent = fullText;
             if (els.newsTagBadge) {
                 els.newsTagBadge.textContent = t('newsBadge');
                 els.newsTagBadge.className = 'bg-red-500 text-white font-black px-1.5 py-0.5 rounded text-[10px] animate-pulse flex-shrink-0';
@@ -1760,7 +1891,6 @@
             showNewsToast(fullText, isGoodNews, true);
         }
 
-        // News Toast Behavior: Stock breaking news navigates to stock tab; other toasts just dismiss on click
         function showNewsToast(msg, isGood, isStockNews = false) {
             const toast = document.createElement('div');
             toast.className = `fixed top-20 left-0 right-0 mx-auto w-[85%] max-w-sm z-[100] px-3.5 py-2 rounded-2xl font-black text-xs text-white shadow-2xl transition-all duration-300 ${isGood ? 'bg-emerald-600 ring-4 ring-emerald-300/40' : 'bg-red-600 ring-4 ring-red-300/40'} animate-bounce flex items-center justify-center space-x-1.5 text-center break-keep cursor-pointer hover:scale-105 active:scale-95`;
@@ -1869,10 +1999,10 @@
             if (!btn) return;
             if (canAfford) {
                 btn.disabled = false;
-                btn.className = `${activeClass} text-white font-bold py-2 px-2.5 rounded-xl text-xs transition-all active:scale-95 shadow-sm min-w-[65px] cursor-pointer`;
+                btn.className = `${activeClass} text-white font-bold py-1.5 px-2 rounded-xl text-xs transition-all active:scale-95 shadow-sm min-w-[60px] cursor-pointer`;
             } else {
                 btn.disabled = true;
-                btn.className = "bg-slate-800 text-slate-500 font-bold py-2 px-2.5 rounded-xl text-xs cursor-not-allowed min-w-[65px]";
+                btn.className = "bg-slate-800 text-slate-500 font-bold py-1.5 px-2 rounded-xl text-xs cursor-not-allowed min-w-[60px]";
             }
         }
 
@@ -1946,6 +2076,19 @@
                 const canAffordMax = gameState.cash >= discountedCost && Math.floor(gameState.cash / discountedCost) > 0;
                 const canSell = re.owned > 0;
 
+                let assetSpritesHtml = '';
+                if (re.owned > 0) {
+                    const visualCount = Math.min(re.owned, 12);
+                    let iconsHtml = '';
+                    for (let i = 0; i < visualCount; i++) {
+                        iconsHtml += `<div class="asset-sprite inline-block p-1 bg-slate-900/80 rounded-lg border border-slate-700 ${re.color} text-xs shadow-sm"><i class="fas ${re.icon}"></i></div>`;
+                    }
+                    if (re.owned > 12) {
+                        iconsHtml += `<span class="text-[9px] font-black text-amber-400 bg-slate-900/90 px-1.5 py-0.5 rounded-lg border border-amber-500/40 align-middle">+${re.owned - 12}</span>`;
+                    }
+                    assetSpritesHtml = `<div class="mt-2.5 pt-2 border-t border-slate-700/60 flex flex-wrap items-center gap-1">${iconsHtml}</div>`;
+                }
+
                 item.innerHTML = `
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center space-x-3">
@@ -1960,11 +2103,12 @@
                             <span class="text-[10px] font-black text-amber-400">${formatCurrency(discountedCost)}</span>
                         </div>
                     </div>
-                    <div class="grid grid-cols-4 gap-1.5 w-full">
-                        <button class="${canSell ? 'bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-500/30 active:scale-95' : 'bg-slate-900 text-slate-600 cursor-not-allowed'} text-[10px] font-bold py-2 rounded-lg transition-colors cursor-pointer" onclick="sellRealEstate('${re.id}', 1)" ${!canSell ? 'disabled' : ''}>-1 Sell</button>
-                        <button class="${canSell ? 'bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-500/30 active:scale-95' : 'bg-slate-900 text-slate-600 cursor-not-allowed'} text-[10px] font-bold py-2 rounded-lg transition-colors cursor-pointer" onclick="sellRealEstate('${re.id}', 'max')" ${!canSell ? 'disabled' : ''}>Sell ALL</button>
-                        <button class="${canAfford ? 'bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95' : 'bg-slate-800 text-slate-600 cursor-not-allowed'} text-[10px] font-bold py-2 rounded-lg transition-colors cursor-pointer" onclick="buyRealEstate('${re.id}', 1)" ${!canAfford ? 'disabled' : ''}>+1 Buy</button>
-                        <button class="${canAffordMax ? 'bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95' : 'bg-slate-800 text-slate-600 cursor-not-allowed'} text-[10px] font-bold py-2 rounded-lg transition-colors cursor-pointer" onclick="buyRealEstate('${re.id}', 'max')" ${!canAffordMax ? 'disabled' : ''}>Buy MAX</button>
+                    ${assetSpritesHtml}
+                    <div class="grid grid-cols-4 gap-1.5 w-full mt-2.5">
+                        <button class="${canSell ? 'bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-500/30 active:scale-95' : 'bg-slate-900 text-slate-600 cursor-not-allowed'} text-[10px] font-bold py-1.5 rounded-lg transition-colors cursor-pointer" onclick="sellRealEstate('${re.id}', 1)" ${!canSell ? 'disabled' : ''}>-1 Sell</button>
+                        <button class="${canSell ? 'bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-500/30 active:scale-95' : 'bg-slate-900 text-slate-600 cursor-not-allowed'} text-[10px] font-bold py-1.5 rounded-lg transition-colors cursor-pointer" onclick="sellRealEstate('${re.id}', 'max')" ${!canSell ? 'disabled' : ''}>Sell ALL</button>
+                        <button class="${canAfford ? 'bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95' : 'bg-slate-800 text-slate-600 cursor-not-allowed'} text-[10px] font-bold py-1.5 rounded-lg transition-colors cursor-pointer" onclick="buyRealEstate('${re.id}', 1)" ${!canAfford ? 'disabled' : ''}>+1 Buy</button>
+                        <button class="${canAffordMax ? 'bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95' : 'bg-slate-800 text-slate-600 cursor-not-allowed'} text-[10px] font-bold py-1.5 rounded-lg transition-colors cursor-pointer" onclick="buyRealEstate('${re.id}', 'max')" ${!canAffordMax ? 'disabled' : ''}>Buy MAX</button>
                     </div>
                 `;
                 els.flexList.appendChild(item);
@@ -1987,6 +2131,7 @@
                 re.owned += buyCount;
                 updateDisplays();
                 renderFlexList();
+                checkAchievements();
             } else {
                 audio.playError();
             }
@@ -2115,6 +2260,7 @@
 
         function updateDisplays() {
             const totalAsset = getTotalAsset();
+            const totalRealEstateVal = getTotalRealEstateValue();
             const rankObj = getCurrentRankObj();
             const incomeMulti = getSkillEffect('incomeMulti');
 
@@ -2124,6 +2270,7 @@
                 else els.cash.className = "font-black text-xs sm:text-sm text-emerald-400 truncate mt-0.5";
             }
             if (els.asset) els.asset.textContent = formatCurrency(totalAsset);
+            if (els.totalRealEstateValDisplay) els.totalRealEstateValDisplay.textContent = formatCurrency(totalRealEstateVal);
 
             let currentStockValue = 0;
             let investedStockValue = 0;
@@ -2173,6 +2320,7 @@
             updateRankAndTheme();
             updateUpgradeUI();
             updateLoanUI();
+            checkAchievements();
 
             const flexTab = document.getElementById('tab-flex');
             if (flexTab && !flexTab.classList.contains('hidden')) {
@@ -2277,6 +2425,7 @@
                 
                 stock.owned += amount;
                 updateDisplays(); renderStockList(); updateModalInfo(); updateChart();
+                checkAchievements();
             } else {
                 audio.playError();
             }
@@ -2289,11 +2438,17 @@
 
             if (stock.owned >= amount) {
                 audio.playBuy();
+                
+                if (stock.avgPrice > 0 && stock.price < stock.avgPrice) {
+                    unlockAchievement('ach_loss');
+                }
+
                 gameState.cash += (stock.price * amount);
                 stock.owned -= amount;
                 if (stock.owned === 0) stock.avgPrice = 0;
                 
                 updateDisplays(); renderStockList(); updateModalInfo(); updateChart();
+                checkAchievements();
             } else {
                 audio.playError();
             }
@@ -2331,16 +2486,16 @@
             });
         }
 
-        // Firebase REST API
+        // Direct REST API Sync using Firebase API Key
         async function syncUserToFirebase() {
-            if (!gameState.nickname) return;
+            if (!gameState || !gameState.nickname) return;
             try {
                 const currentRank = getCurrentRankObj();
                 const rankTitleText = typeof currentRank.title === 'object' ? currentRank.title.en : currentRank.title;
                 
-                const url = `${FIREBASE_REST_BASE}/rankings/${gameState.userId}?updateMask.fieldPaths=nickname&updateMask.fieldPaths=totalAsset&updateMask.fieldPaths=rankTitle`;
+                const url = `${FIREBASE_REST_BASE}/rankings/${gameState.userId}?key=${FIREBASE_API_KEY}&updateMask.fieldPaths=nickname&updateMask.fieldPaths=totalAsset&updateMask.fieldPaths=rankTitle`;
                 
-                await fetch(url, {
+                const response = await fetch(url, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -2351,14 +2506,21 @@
                         }
                     })
                 });
+                console.log("Firebase Sync Status:", response.status);
             } catch (e) {
-                console.warn("REST Sync bypass:", e);
+                console.warn("REST Sync Error:", e);
             }
         }
 
+        // Direct REST API Leaderboard Fetch with API Key
         async function fetchLeaderboard() {
+            if (!els.leaderboardList) return;
+            els.leaderboardList.innerHTML = '<div class="text-center py-4 text-xs font-bold text-slate-400">Loading Real Leaderboard...</div>';
+
+            await syncUserToFirebase();
+
             try {
-                const url = `${FIREBASE_REST_BASE}:runQuery`;
+                const url = `${FIREBASE_REST_BASE}:runQuery?key=${FIREBASE_API_KEY}`;
                 const queryBody = {
                     structuredQuery: {
                         from: [{ collectionId: "rankings" }],
@@ -2373,13 +2535,21 @@
                     body: JSON.stringify(queryBody)
                 });
                 
+                if (!res.ok) {
+                    throw new Error(`Firebase REST API Error (Status: ${res.status})`);
+                }
+
                 const data = await res.json();
                 els.leaderboardList.innerHTML = '';
 
                 let rank = 1;
-                if (Array.isArray(data) && data.length > 0 && data[0].document) {
+                let hasRealData = false;
+
+                if (Array.isArray(data) && data.length > 0) {
                     data.forEach((item) => {
-                        if (!item.document) return;
+                        if (!item.document || !item.document.fields) return;
+                        hasRealData = true;
+
                         const fields = item.document.fields;
                         const docId = item.document.name.split('/').pop();
                         const isMe = docId === gameState.userId;
@@ -2403,43 +2573,15 @@
                         els.leaderboardList.appendChild(div);
                         rank++;
                     });
-                } else {
-                    renderMockLeaderboard();
+                }
+
+                if (!hasRealData) {
+                    els.leaderboardList.innerHTML = '<div class="text-center py-6 text-xs text-slate-400">No real players registered yet.<br>Be the first on the leaderboard!</div>';
                 }
             } catch (e) { 
-                console.warn("Leaderboard REST error:", e);
-                renderMockLeaderboard();
+                console.warn("Leaderboard REST Error:", e);
+                els.leaderboardList.innerHTML = '<div class="text-center py-6 text-xs text-red-400">Failed to load real-time rankings.<br>Check internet or Firebase connection.</div>';
             }
-        }
-
-        function renderMockLeaderboard() {
-            if (!els.leaderboardList) return;
-            els.leaderboardList.innerHTML = '';
-            const myRank = getCurrentRankObj();
-            const rankTitle = typeof myRank.title === 'object' ? myRank.title[gameState.lang] : myRank.title;
-            const mockData = [
-                { nickname: gameState.nickname || 'Investor', totalAsset: getTotalAsset(), isMe: true, rankTitle: rankTitle },
-                { nickname: 'WallSt_Whale', totalAsset: 95000000000, isMe: false, rankTitle: '🚀 Wall St Legend' },
-                { nickname: 'Ant_King99', totalAsset: 12000000000, isMe: false, rankTitle: '👑 Ant King' },
-                { nickname: 'Gold_Spoon_Dev', totalAsset: 500000000, isMe: false, rankTitle: '🥇 Gold Spoon' }
-            ].sort((a,b) => b.totalAsset - a.totalAsset);
-
-            mockData.forEach((data, index) => {
-                const rank = index + 1;
-                const item = document.createElement('div');
-                item.className = `p-3 rounded-2xl border flex items-center justify-between ${data.isMe ? 'bg-amber-500/20 border-amber-500/60 ring-2 ring-amber-400/50' : 'bg-slate-900 border-slate-800'}`;
-                item.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <span class="font-black text-sm w-6 text-center ${rank === 1 ? 'text-amber-400' : rank === 2 ? 'text-slate-300' : rank === 3 ? 'text-amber-600' : 'text-slate-500'}">#${rank}</span>
-                        <div>
-                            <h4 class="font-bold text-xs text-white">${data.nickname} ${data.isMe ? '<span class="text-[9px] bg-amber-400 text-slate-950 px-1 rounded font-bold">YOU</span>' : ''}</h4>
-                            <span class="text-[9px] text-slate-400 font-bold">${data.rankTitle}</span>
-                        </div>
-                    </div>
-                    <span class="font-black text-xs text-amber-300">${formatCurrency(data.totalAsset)}</span>
-                `;
-                els.leaderboardList.appendChild(item);
-            });
         }
 
         function registerNickname(val) {
@@ -2456,69 +2598,55 @@
             syncUserToFirebase();
             saveGame();
             showNewsToast(`Nickname Registered: ${trimmed}`, true, false);
+
+            checkAndRunTutorial();
             return true;
         }
 
-        function runTutorialStep() {
-            const overlay = document.getElementById('tutorialOverlay');
-            const box = document.getElementById('tutorialBox');
-            const text = document.getElementById('tutorialText');
-            if (!overlay || !box || !text) return;
-
-            if (gameState.tutorialCompleted || gameState.tutorialStep >= 3) {
-                overlay.classList.add('hidden');
+        function checkAndRunTutorial() {
+            if (!els.tutorialOverlay || gameState.tutorialCompleted) {
+                if (els.tutorialOverlay) els.tutorialOverlay.classList.add('hidden');
                 return;
             }
+            renderTutorialStep();
+        }
 
-            overlay.classList.remove('hidden');
-            const boxWidth = 224;
-            const margin = 12;
+        function renderTutorialStep() {
+            if (!els.tutorialOverlay || gameState.tutorialCompleted) return;
 
-            const setPosition = (targetEl) => {
-                if (!targetEl) return;
-                const rect = targetEl.getBoundingClientRect();
-                let leftPos = rect.left + (rect.width / 2) - (boxWidth / 2);
-                leftPos = Math.max(margin, Math.min(leftPos, window.innerWidth - boxWidth - margin));
-                
-                let topPos = rect.top - 110;
-                if (topPos < margin) {
-                    topPos = rect.bottom + 15;
-                }
-                
-                box.style.left = `${leftPos}px`;
-                box.style.top = `${topPos}px`;
-            };
+            const step = gameState.tutorialStep || 0;
+            els.tutorialOverlay.classList.remove('hidden');
 
-            if (gameState.tutorialStep === 0) {
-                text.textContent = t('tut1');
-                setPosition(document.getElementById('workBtn'));
-            } else if (gameState.tutorialStep === 1) {
-                text.textContent = t('tut2');
-                setPosition(document.querySelector('.nav-btn[data-target="tab-stock"]'));
-            } else if (gameState.tutorialStep === 2) {
-                text.textContent = t('tut3');
-                setPosition(document.querySelector('.nav-btn[data-target="tab-upgrade"]'));
+            if (step === 0) {
+                if (els.tutorialStepBadge) els.tutorialStepBadge.textContent = "Step 1 / 3";
+                if (els.tutorialTitle) els.tutorialTitle.textContent = t('tut1Title');
+                if (els.tutorialText) els.tutorialText.textContent = t('tut1Desc');
+            } else if (step === 1) {
+                if (els.tutorialStepBadge) els.tutorialStepBadge.textContent = "Step 2 / 3";
+                if (els.tutorialTitle) els.tutorialTitle.textContent = t('tut2Title');
+                if (els.tutorialText) els.tutorialText.textContent = t('tut2Desc');
+            } else if (step === 2) {
+                if (els.tutorialStepBadge) els.tutorialStepBadge.textContent = "Step 3 / 3";
+                if (els.tutorialTitle) els.tutorialTitle.textContent = t('tut3Title');
+                if (els.tutorialText) els.tutorialText.textContent = t('tut3Desc');
+            } else {
+                finishTutorial();
             }
         }
 
         function nextTutorialStep() {
-            if (gameState.tutorialCompleted) return;
-            gameState.tutorialStep++;
+            gameState.tutorialStep = (gameState.tutorialStep || 0) + 1;
             if (gameState.tutorialStep >= 3) {
-                gameState.tutorialCompleted = true;
-                const overlay = document.getElementById('tutorialOverlay');
-                if (overlay) overlay.classList.add('hidden');
+                finishTutorial();
             } else {
-                runTutorialStep();
+                renderTutorialStep();
+                saveGame();
             }
-            saveGame();
         }
 
-        function skipTutorial() {
+        function finishTutorial() {
             gameState.tutorialCompleted = true;
-            gameState.tutorialStep = 3;
-            const overlay = document.getElementById('tutorialOverlay');
-            if (overlay) overlay.classList.add('hidden');
+            if (els.tutorialOverlay) els.tutorialOverlay.classList.add('hidden');
             saveGame();
         }
 
@@ -2559,10 +2687,6 @@
                     if (target === 'tab-flex') renderFlexList();
                     if (target === 'tab-loan') updateLoanUI();
                     if (target === 'tab-rebirth') { updateUpgradeUI(); renderSkillList(); }
-
-                    if (!gameState.tutorialCompleted && gameState.tutorialStep > 0) {
-                        nextTutorialStep();
-                    }
                 });
             });
 
@@ -2573,6 +2697,20 @@
 
             if (els.btnWatchAdStock) {
                 els.btnWatchAdStock.addEventListener('click', watchAdForStockReward);
+            }
+
+            if (els.btnNextTutorial) {
+                els.btnNextTutorial.addEventListener('click', () => {
+                    audio.init(); audio.playClick();
+                    nextTutorialStep();
+                });
+            }
+
+            if (els.btnSkipTutorial) {
+                els.btnSkipTutorial.addEventListener('click', () => {
+                    audio.init(); audio.playClick();
+                    finishTutorial();
+                });
             }
 
             if (els.btnUpgClick) els.btnUpgClick.addEventListener('click', () => { audio.init(); const cost = getUpgCost(gameState.clickUpg); if (gameState.cash >= cost) { audio.playBuy(); gameState.cash -= cost; gameState.clickUpg.level++; updateDisplays(); } else audio.playError(); });
@@ -2641,8 +2779,8 @@
                 saveGame();
             });
 
-            if (els.bgmSlider) { els.bgmSlider.addEventListener('input', (e) => { audio.init(); audio.bgmVolume = e.target.value / 100; if (els.bgmVolText) els.bgmVolText.textContent = `${e.target.value}%`; audio.updateVolumes(); saveGame(); }); }
-            if (els.sfxSlider) { els.sfxSlider.addEventListener('input', (e) => { audio.init(); audio.sfxVolume = e.target.value / 100; if (els.sfxVolText) els.sfxVolText.textContent = `${e.target.value}%`; audio.updateVolumes(); saveGame(); }); }
+            if (els.bgmSlider) els.bgmSlider.addEventListener('input', (e) => { audio.init(); audio.bgmVolume = e.target.value / 100; if (els.bgmVolText) els.bgmVolText.textContent = `${e.target.value}%`; audio.updateVolumes(); saveGame(); });
+            if (els.sfxSlider) els.sfxSlider.addEventListener('input', (e) => { audio.init(); audio.sfxVolume = e.target.value / 100; if (els.sfxVolText) els.sfxVolText.textContent = `${e.target.value}%`; audio.updateVolumes(); saveGame(); });
 
             if (els.btnSubmitNickname) {
                 els.btnSubmitNickname.addEventListener('click', () => {
@@ -2652,29 +2790,11 @@
                 });
             }
 
-            if (els.nicknameInput) {
-                els.nicknameInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        audio.init();
-                        registerNickname(els.nicknameInput.value);
-                    }
-                });
-            }
-
             if (els.btnSaveNickname) {
                 els.btnSaveNickname.addEventListener('click', () => {
                     audio.init();
                     const val = els.settingNicknameInput ? els.settingNicknameInput.value : '';
                     registerNickname(val);
-                });
-            }
-
-            if (els.settingNicknameInput) {
-                els.settingNicknameInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        audio.init();
-                        registerNickname(els.settingNicknameInput.value);
-                    }
                 });
             }
 
@@ -2690,12 +2810,28 @@
             if (els.btnDoPrestige) els.btnDoPrestige.addEventListener('click', () => {
                 const gain = calculatePrestigeGain();
                 if (gain <= 0) return;
-                if (confirm(`Execute Golden Spoon Rebirth?\nReset progress for ${gain} Karma shards.`)) {
-                    audio.init(); audio.playPrestige();
+                audio.init(); audio.playClick();
+                if (els.rebirthModalGain) els.rebirthModalGain.textContent = `${gain.toLocaleString('en-US')}`;
+                if (els.rebirthConfirmModal) els.rebirthConfirmModal.classList.remove('hidden');
+            });
+
+            if (els.btnCancelRebirth) {
+                els.btnCancelRebirth.addEventListener('click', () => {
+                    audio.playClick();
+                    if (els.rebirthConfirmModal) els.rebirthConfirmModal.classList.add('hidden');
+                });
+            }
+
+            if (els.btnConfirmRebirth) {
+                els.btnConfirmRebirth.addEventListener('click', () => {
+                    const gain = calculatePrestigeGain();
+                    if (gain <= 0) return;
+                    audio.playPrestige();
                     const savedKarma = gameState.karma + gain;
                     const savedSkills = JSON.parse(JSON.stringify(gameState.skills));
                     const savedNick = gameState.nickname;
                     const savedId = gameState.userId;
+                    const savedAchievements = JSON.parse(JSON.stringify(gameState.unlockedAchievements));
                     const savedAudio = { bgm: audio.bgmVolume, sfx: audio.sfxVolume };
                     
                     isResetting = true;
@@ -2704,11 +2840,12 @@
                     gameState.skills = savedSkills;
                     gameState.nickname = savedNick;
                     gameState.userId = savedId;
+                    gameState.unlockedAchievements = savedAchievements;
                     audio.bgmVolume = savedAudio.bgm; audio.sfxVolume = savedAudio.sfx;
                     saveGame();
                     location.reload(); 
-                }
-            });
+                });
+            }
 
             if (els.closeModalBtn) els.closeModalBtn.addEventListener('click', closeTradeModal);
             if (els.buyBtn) els.buyBtn.addEventListener('click', () => buyStock(1));
@@ -2718,16 +2855,15 @@
 
             if (els.btnOpenRankModal) els.btnOpenRankModal.addEventListener('click', () => { audio.init(); audio.playClick(); renderRankList(); if (els.rankModal) els.rankModal.classList.remove('hidden'); });
             if (els.closeRankModalBtn) els.closeRankModalBtn.addEventListener('click', () => { audio.playClick(); if (els.rankModal) els.rankModal.classList.add('hidden'); });
+
+            if (els.btnOpenAchievements) els.btnOpenAchievements.addEventListener('click', () => { audio.init(); audio.playClick(); renderAchievementsList(); if (els.achievementsModal) els.achievementsModal.classList.remove('hidden'); });
+            if (els.closeAchievementsModalBtn) els.closeAchievementsModalBtn.addEventListener('click', () => { audio.playClick(); if (els.achievementsModal) els.achievementsModal.classList.add('hidden'); });
+
             if (els.btnOpenLeaderboard) els.btnOpenLeaderboard.addEventListener('click', () => { audio.init(); audio.playClick(); fetchLeaderboard(); if (els.leaderboardModal) els.leaderboardModal.classList.remove('hidden'); });
             if (els.closeLeaderboardBtn) els.closeLeaderboardBtn.addEventListener('click', () => { audio.playClick(); if (els.leaderboardModal) els.leaderboardModal.classList.add('hidden'); });
 
-            if (els.btnNextTutorial) els.btnNextTutorial.addEventListener('click', nextTutorialStep);
-            if (els.btnSkipTutorial) els.btnSkipTutorial.addEventListener('click', skipTutorial);
-
             window.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'hidden' && !isResetting) {
-                    saveGame();
-                }
+                if (document.visibilityState === 'hidden' && !isResetting) saveGame();
             });
             window.addEventListener('beforeunload', () => {
                 if (!isResetting) saveGame();
@@ -2741,9 +2877,11 @@
                     cash: gameState.cash,
                     borrowedAmount: gameState.borrowedAmount || 0,
                     loanTimer: gameState.loanTimer,
+                    feverCount: gameState.feverCount || 0,
                     clickUpg: gameState.clickUpg, autoUpg: gameState.autoUpg,
                     feverGaugeUpg: gameState.feverGaugeUpg, feverMultiUpg: gameState.feverMultiUpg,
                     stocks: gameState.stocks, realEstate: gameState.realEstate,
+                    unlockedAchievements: gameState.unlockedAchievements || {},
                     nickname: gameState.nickname, userId: gameState.userId,
                     karma: gameState.karma, skills: gameState.skills,
                     lang: gameState.lang, tutorialStep: gameState.tutorialStep, tutorialCompleted: gameState.tutorialCompleted,
@@ -2762,6 +2900,7 @@
                     gameState.cash = parsed.cash || 0; 
                     if (parsed.borrowedAmount !== undefined) gameState.borrowedAmount = parsed.borrowedAmount;
                     gameState.loanTimer = parsed.loanTimer !== undefined ? parsed.loanTimer : 30;
+                    gameState.feverCount = parsed.feverCount || 0;
                     if (parsed.lang) gameState.lang = parsed.lang;
                     if (parsed.tutorialStep !== undefined) gameState.tutorialStep = parsed.tutorialStep;
                     if (parsed.tutorialCompleted !== undefined) gameState.tutorialCompleted = parsed.tutorialCompleted;
@@ -2774,6 +2913,8 @@
                     if (parsed.nickname) gameState.nickname = parsed.nickname;
                     if (parsed.userId) gameState.userId = parsed.userId;
                     if (parsed.karma) gameState.karma = parsed.karma;
+                    if (parsed.unlockedAchievements) gameState.unlockedAchievements = parsed.unlockedAchievements;
+
                     if (parsed.skills) {
                         Object.keys(gameState.skills).forEach(key => { if(parsed.skills[key]) gameState.skills[key].level = parsed.skills[key].level; });
                     }
@@ -2795,7 +2936,7 @@
         window.buyStock = buyStock;
         window.sellStock = sellStock;
 
-        window.onload = () => {
+        window.onload = async () => {
             initDOMElements();
             loadGame();
             setupEventListeners();
@@ -2804,16 +2945,13 @@
             renderStockList();
             renderFlexList();
 
-            if (!gameState.tutorialCompleted) {
-                runTutorialStep();
-            }
-
             if (!gameState.nickname && els.nicknameModal) {
                 els.nicknameModal.classList.remove('hidden');
             } else {
                 if (els.settingNicknameInput) els.settingNicknameInput.value = gameState.nickname;
                 if (els.nicknameInput) els.nicknameInput.value = gameState.nickname;
                 syncUserToFirebase();
+                checkAndRunTutorial();
             }
 
             if (els.bgmSlider) { els.bgmSlider.value = audio.bgmVolume * 100; if(els.bgmVolText) els.bgmVolText.textContent = `${els.bgmSlider.value}%`; }
